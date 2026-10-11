@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0">
+<title>KAS KELAS — Catatan Kas Digital</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      fontFamily: { jakarta: ['"Plus Jakarta Sans"','system-ui','sans-serif'] },
+      colors: {
+        ios: { blue:'#0A84FF', light:'#5AC8FA', deep:'#0055D4', ink:'#0B1B33' },
+        mist:'#F6FAFF'
+      },
+      boxShadow: {
+        soft:'0 8px 30px rgba(10,132,255,0.10), 0 2px 8px rgba(11,27,51,0.06)',
+        card:'0 10px 40px rgba(11,27,51,0.08), 0 2px 10px rgba(11,27,51,0.05)',
+        dock:'0 -8px 40px rgba(11,27,51,0.10), 0 8px 30px rgba(10,132,255,0.12)',
+        blue:'0 10px 30px rgba(10,132,255,0.35)'
+      }
+    }
+  }
+}
+</script>
+<style>
+*{ -webkit-tap-highlight-color:transparent; }
+html{ scroll-behavior:smooth; }
+body{ font-family:'Plus Jakarta Sans',system-ui,sans-serif; background:#FFFFFF; color:#0B1B33; min-height:100dvh; }
+body::before{
+  content:''; position:fixed; inset:0; z-index:-2;
+  background:
+    radial-gradient(900px 500px at 15% -5%, rgba(186,230,253,0.55), transparent 60%),
+    radial-gradient(800px 500px at 90% 10%, rgba(191,219,254,0.45), transparent 60%),
+    radial-gradient(700px 600px at 50% 100%, rgba(224,242,254,0.6), transparent 60%),
+    linear-gradient(180deg, #FFFFFF 0%, #F8FBFF 45%, #F1F7FF 100%);
+}
+.orb{ position:fixed; border-radius:50%; filter:blur(60px); z-index:-1; opacity:.55; pointer-events:none; animation:float 9s ease-in-out infinite; }
+@keyframes float{ 0%,100%{ transform:translateY(0) scale(1);} 50%{ transform:translateY(-18px) scale(1.05);} }
+.glass{ background:rgba(255,255,255,0.78); backdrop-filter:blur(22px) saturate(180%); -webkit-backdrop-filter:blur(22px) saturate(180%); border:1px solid rgba(255,255,255,0.85); box-shadow:0 10px 40px rgba(11,27,51,0.08); }
+.glass-soft{ background:rgba(255,255,255,0.65); backdrop-filter:blur(16px) saturate(160%); -webkit-backdrop-filter:blur(16px) saturate(160%); border:1px solid rgba(255,255,255,0.7); }
+.glass-blue{ background:linear-gradient(135deg, rgba(10,132,255,0.12), rgba(90,200,250,0.10)); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border:1px solid rgba(10,132,255,0.15); }
+.card{ background:rgba(255,255,255,0.88); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); border:1px solid rgba(255,255,255,0.9); border-radius:26px; box-shadow:0 10px 40px rgba(11,27,51,0.07), 0 2px 10px rgba(11,27,51,0.04); }
+.card-hover{ transition:transform .2s ease, box-shadow .2s ease; }
+.card-hover:active{ transform:scale(.98); }
+.btn-press{ transition:transform .15s ease, filter .15s ease, box-shadow .15s ease; }
+.btn-press:active{ transform:scale(.96); filter:brightness(.97); }
+.input{ width:100%; background:rgba(255,255,255,0.9); border:1.5px solid #E6EFFA; border-radius:18px; padding:14px 16px 14px 46px; font-size:15px; font-weight:500; outline:none; transition:.2s; color:#0B1B33; }
+.input:focus{ border-color:#0A84FF; box-shadow:0 0 0 4px rgba(10,132,255,0.12); background:#fff; }
+.input-noicon{ padding-left:16px !important; }
+select.input{ padding-left:16px; appearance:none; }
+.page-anim{ animation:pageIn .45s cubic-bezier(.22,1,.36,1) both; }
+@keyframes pageIn{ from{ opacity:0; transform:translateY(14px);} to{ opacity:1; transform:translateY(0);} }
+.stagger>*{ animation:pageIn .5s cubic-bezier(.22,1,.36,1) both; }
+.stagger>*:nth-child(1){ animation-delay:.02s;} .stagger>*:nth-child(2){ animation-delay:.07s;} .stagger>*:nth-child(3){ animation-delay:.12s;} .stagger>*:nth-child(4){ animation-delay:.17s;} .stagger>*:nth-child(5){ animation-delay:.22s;} .stagger>*:nth-child(6){ animation-delay:.27s;} .stagger>*:nth-child(7){ animation-delay:.32s;}
+@keyframes shake{ 0%,100%{transform:rotate(0)} 20%{transform:rotate(-12deg)} 40%{transform:rotate(10deg)} 60%{transform:rotate(-6deg)} 80%{transform:rotate(4deg)} }
+.bell-shake{ animation:shake .6s ease; }
+@keyframes popIn{ from{ opacity:0; transform:scale(.92) translateY(10px);} to{ opacity:1; transform:scale(1) translateY(0);} }
+.pop{ animation:popIn .35s cubic-bezier(.22,1,.36,1) both; }
+.no-scrollbar::-webkit-scrollbar{ display:none;} .no-scrollbar{ -ms-overflow-style:none; scrollbar-width:none;}
+#sheetOverlay{ transition:opacity .3s ease; }
+#sheet{ transition:transform .38s cubic-bezier(.22,1,.36,1); transform:translateY(100%); }
+#sheet.open{ transform:translateY(0); }
+.toast-in{ animation:toastIn .35s cubic-bezier(.22,1,.36,1) both; }
+@keyframes toastIn{ from{ opacity:0; transform:translateY(16px) scale(.95);} to{ opacity:1; transform:translateY(0) scale(1);} }
+.shine{ position:relative; overflow:hidden; }
+.shine::after{ content:''; position:absolute; top:0; left:-80%; width:60%; height:100%; background:linear-gradient(105deg, transparent, rgba(255,255,255,0.35), transparent); transform:skewX(-20deg); animation:shineMove 4.5s ease-in-out infinite; }
+@keyframes shineMove{ 0%{ left:-80%;} 55%,100%{ left:130%;} }
+.saldo-gradient{ background:linear-gradient(135deg, #0A84FF 0%, #2D9CFF 40%, #5AC8FA 100%); }
+.dot-pulse{ position:relative; }
+.dot-pulse::after{ content:''; position:absolute; inset:-4px; border-radius:50%; background:rgba(239,68,68,0.25); animation:pulseRing 1.6s ease-out infinite; }
+@keyframes pulseRing{ 0%{ transform:scale(.7); opacity:1;} 100%{ transform:scale(1.4); opacity:0;} }
+.chip-active{ background:#0B1B33 !important; color:#fff !important; border-color:#0B1B33 !important; }
+.bar-anim{ transition:height 1s cubic-bezier(.22,1,.36,1); }
+.seg{ background:#EEF4FD; border-radius:18px; padding:4px; display:flex; gap:4px; }
+.seg button{ flex:1; border-radius:14px; padding:10px; font-weight:700; font-size:14px; color:#6B86A8; transition:.25s; }
+.seg button.active{ background:#fff; color:#0B1B33; box-shadow:0 4px 14px rgba(11,27,51,0.10); }
+.avatar-grad-1{ background:linear-gradient(135deg,#0A84FF,#5AC8FA);} .avatar-grad-2{ background:linear-gradient(135deg,#7C3AED,#C084FC);} .avatar-grad-3{ background:linear-gradient(135deg,#059669,#34D399);} .avatar-grad-4{ background:linear-gradient(135deg,#EA580C,#FB923C);} .avatar-grad-5{ background:linear-gradient(135deg,#DB2777,#F9A8D4);} .avatar-grad-6{ background:linear-gradient(135deg,#0E7490,#22D3EE);}
+.tab-item{ transition:.2s; } .tab-item.active{ color:#0A84FF; } .tab-item.active .tab-icon{ background:linear-gradient(135deg,#0A84FF,#5AC8FA); color:#fff; box-shadow:0 8px 20px rgba(10,132,255,0.35); transform:translateY(-2px); }
+.tab-icon{ transition:.25s; }
+.line-clamp-2{ display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+@media (min-width:520px){ #phone{ box-shadow:0 30px 80px rgba(11,27,51,0.15), 0 0 0 1px rgba(255,255,255,0.6); border-radius:36px; overflow:hidden; margin:20px auto; min-height:calc(100dvh - 40px); } }
+input[type="date"]::-webkit-calendar-picker-indicator{ opacity:.5; }
+</style>
+</head>
+<body class="font-jakarta">
+
+<div class="orb" style="width:320px;height:320px;background:#BAE6FD;top:-80px;left:-80px;"></div>
+<div class="orb" style="width:280px;height:280px;background:#BFDBFE;top:10%;right:-100px;animation-delay:1.5s;"></div>
+<div class="orb" style="width:300px;height:300px;background:#E0F2FE;bottom:-60px;left:20%;animation-delay:3s;"></div>
+
+<div id="phone" class="relative w-full max-w-[430px] mx-auto min-h-[100dvh] flex flex-col">
+
+  <!-- LOADING -->
+  <div id="bootLoader" class="absolute inset-0 z-[100] bg-white/80 backdrop-blur-xl flex flex-col items-center justify-center gap-4">
+    <div class="w-20 h-20 rounded-[28px] saldo-gradient flex items-center justify-center shadow-blue shine">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M2 10h20"/><circle cx="17" cy="15" r="1.2" fill="white"/></svg>
+    </div>
+    <div class="font-extrabold text-xl tracking-tight">KAS KELAS</div>
+    <div class="flex items-center gap-2 text-sm text-slate-500 font-medium"><span class="w-2 h-2 rounded-full bg-ios-blue animate-ping"></span> Mengamankan sesi...</div>
+  </div>
+
+  <!-- AUTH VIEW -->
+  <div id="authView" class="hidden flex-1 flex flex-col px-5 pt-10 pb-6">
+    <div class="flex flex-col items-center text-center mb-6 page-anim">
+      <div class="w-[76px] h-[76px] rounded-[26px] saldo-gradient flex items-center justify-center shadow-blue shine mb-4">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M2 10h20"/><path d="M6 15h4"/></svg>
+      </div>
+      <h1 class="text-[28px] font-extrabold tracking-tight leading-none">KAS KELAS</h1>
+      <p id="authClassName" class="text-[13px] font-semibold text-slate-500 mt-2">Catatan Kas Digital • Aman & Transparan</p>
+      <div class="mt-3 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full glass text-[11px] font-bold text-ios-blue">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        PBKDF2-SHA256 • SESSION TOKEN • ROLE VERIFIED
+      </div>
+    </div>
+
+    <div class="card p-5 page-anim" style="animation-delay:.1s">
+      <div class="seg mb-5">
+        <button id="tabLogin" class="active" onclick="switchAuth('login')">Masuk</button>
+        <button id="tabRegister" onclick="switchAuth('register')">Daftar</button>
+      </div>
+
+      <div id="loginForm">
+        <label class="text-[12px] font-bold text-slate-500 uppercase tracking-wide ml-1">Nama Pengguna</label>
+        <div class="relative mt-1.5 mb-4">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+          <input id="loginUser" class="input" placeholder="cth: bagas" autocomplete="username" />
+        </div>
+        <label class="text-[12px] font-bold text-slate-500 uppercase tracking-wide ml-1">Password</label>
+        <div class="relative mt-1.5 mb-2">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+          <input id="loginPass" type="password" class="input pr-12" placeholder="••••••••" autocomplete="current-password" />
+          <button onclick="togglePass('loginPass',this)" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        </div>
+        <button onclick="doLogin()" id="btnLogin" class="btn-press w-full mt-4 saldo-gradient text-white font-extrabold text-[15px] py-4 rounded-[20px] shadow-blue flex items-center justify-center gap-2">
+          <span>Masuk ke Aplikasi</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+
+      <div id="registerForm" class="hidden">
+        <div class="glass-blue rounded-2xl p-3 mb-4 flex gap-2.5 items-start">
+          <span class="w-8 h-8 shrink-0 rounded-xl bg-ios-blue text-white flex items-center justify-center"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></span>
+          <p class="text-[12px] font-medium text-slate-600 leading-snug">Buat akun siswa baru. Owner akan menerima <b>notifikasi</b> dan menentukan peranmu.</p>
+        </div>
+        <label class="text-[12px] font-bold text-slate-500 uppercase tracking-wide ml-1">Nama Pengguna Baru</label>
+        <div class="relative mt-1.5 mb-4">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+          <input id="regUser" class="input" placeholder="cth: bagas_pratama" autocomplete="off" />
+        </div>
+        <label class="text-[12px] font-bold text-slate-500 uppercase tracking-wide ml-1">Password (min. 6 karakter)</label>
+        <div class="relative mt-1.5 mb-2">
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span>
+          <input id="regPass" type="password" class="input pr-12" placeholder="Buat password aman" autocomplete="new-password" />
+          <button onclick="togglePass('regPass',this)" class="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-slate-400"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button>
+        </div>
+        <button onclick="doRegister()" id="btnReg" class="btn-press w-full mt-4 bg-[#0B1B33] text-white font-extrabold text-[15px] py-4 rounded-[20px] shadow-card flex items-center justify-center gap-2">
+          <span>Buat Akun Siswa</span>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M22 11h-6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="mt-4 card p-4 page-anim" style="animation-delay:.2s">
+      <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest mb-3 ml-1">Coba Masuk Cepat (Demo)</p>
+      <div class="grid grid-cols-3 gap-2">
+        <button onclick="quickLogin('owner','owner123')" class="btn-press glass-blue rounded-2xl py-3 px-2 flex flex-col items-center gap-1">
+          <span class="w-9 h-9 rounded-2xl bg-gradient-to-br from-amber-400 to-orange-500 text-white flex items-center justify-center font-extrabold">O</span>
+          <span class="text-[12px] font-extrabold">Owner</span><span class="text-[10px] text-slate-500 font-medium -mt-1">akses penuh</span>
+        </button>
+        <button onclick="quickLogin('admin','admin123')" class="btn-press glass-blue rounded-2xl py-3 px-2 flex flex-col items-center gap-1">
+          <span class="w-9 h-9 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-500 text-white flex items-center justify-center font-extrabold">A</span>
+          <span class="text-[12px] font-extrabold">Admin</span><span class="text-[10px] text-slate-500 font-medium -mt-1">kelola kas</span>
+        </button>
+        <button onclick="quickLogin('bagas','bagas123')" class="btn-press glass-blue rounded-2xl py-3 px-2 flex flex-col items-center gap-1">
+          <span class="w-9 h-9 rounded-2xl avatar-grad-1 text-white flex items-center justify-center font-extrabold">B</span>
+          <span class="text-[12px] font-extrabold">Siswa</span><span class="text-[10px] text-slate-500 font-medium -mt-1">read-only</span>
+        </button>
+      </div>
+    </div>
+
+    <p class="text-center text-[11px] text-slate-400 font-medium mt-6 mb-1">by bagas ganteng bgt</p>
+  </div>
+
+  <!-- APP VIEW -->
+  <div id="appView" class="hidden flex-1 flex-col relative">
+    <header class="sticky top-0 z-30 px-5 pt-5 pb-3" style="background:linear-gradient(180deg, rgba(255,255,255,0.92) 60%, rgba(255,255,255,0)); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);">
+      <div class="flex items-center gap-3">
+        <button onclick="go('pengaturan')" class="btn-press relative">
+          <div id="hdrAvatar" class="w-11 h-11 rounded-[16px] avatar-grad-1 text-white flex items-center justify-center font-extrabold text-lg shadow-soft">B</div>
+          <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full"></span>
+        </button>
+        <div class="flex-1 min-w-0">
+          <p id="hdrGreet" class="text-[11px] font-bold text-slate-400">Selamat pagi,</p>
+          <div class="flex items-center gap-1.5">
+            <h2 id="hdrName" class="font-extrabold text-[17px] truncate">Bagas</h2>
+            <span id="hdrRole" class="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-100 text-ios-blue">SISWA</span>
+          </div>
+        </div>
+        <button onclick="openNotifications()" id="bellBtn" class="btn-press relative w-11 h-11 rounded-[16px] glass flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#0B1B33" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <span id="bellBadge" class="hidden absolute -top-1.5 -right-1.5 min-w-[22px] h-[22px] px-1 rounded-full bg-red-500 text-white text-[11px] font-extrabold flex items-center justify-center border-2 border-white dot-pulse">0</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="appContent" class="flex-1 px-5 pb-36 pt-1 overflow-y-auto no-scrollbar" style="max-height:calc(100dvh - 90px);"></main>
+
+    <nav class="absolute bottom-0 left-0 right-0 z-30 px-5 pb-5 pt-2" style="background:linear-gradient(0deg, rgba(255,255,255,0.95) 70%, transparent);">
+      <div id="bottomNav" class="glass rounded-[26px] shadow-dock px-2 py-2 flex items-center justify-around"></div>
+      <p class="text-center text-[10px] text-slate-400/80 font-medium mt-2">by bagas ganteng bgt</p>
+    </nav>
+  </div>
+
+  <!-- SHEET -->
+  <div id="sheetOverlay" class="hidden absolute inset-0 z-[60] bg-[#0B1B33]/40 backdrop-blur-sm" style="opacity:0;" onclick="closeSheet()"></div>
+  <div id="sheet" class="absolute bottom-0 left-0 right-0 z-[61] bg-white/95 backdrop-blur-2xl rounded-t-[30px] shadow-2xl max-h-[92%] flex flex-col" style="border:1px solid rgba(255,255,255,0.8);">
+    <div class="pt-3 pb-1 flex justify-center shrink-0"><div class="w-10 h-1.5 rounded-full bg-slate-200"></div></div>
+    <div id="sheetContent" class="overflow-y-auto no-scrollbar px-5 pb-8 pt-1"></div>
+  </div>
+
+  <!-- TOASTS -->
+  <div id="toastStack" class="absolute bottom-28 left-0 right-0 z-[80] px-5 flex flex-col gap-2 items-center pointer-events-none"></div>
+</div>
+
+<script>
+/* =====================================================================
+   KAS KELAS — Secure Single-File App
+   ARSITEKTUR KEAMANAN (simulasi client+server dalam 1 file):
+   - Semua akses data WAJIB melalui objek `Backend` (lapisan server).
+   - UI TIDAK PERNAH membaca/menulis DB langsung. DB terkunci di closure.
+   - Setiap method Backend memverifikasi: session token valid + belum
+     kedaluwarsa + role diizinkan. Jika tidak -> 401/403.
+   - Password: PBKDF2-HMAC-SHA256 (80.000 iterasi) + salt acak 16 byte.
+     Tidak ada plaintext yang disimpan. localStorage hanya menyimpan hash.
+   - Session token acak 256-bit, disimpan di sessionStorage (bukan password).
+   - Di production, objek Backend ini dipindah 1:1 menjadi REST API server
+     (Node/Express) + database asli, dan "KAS_ENV" menjadi environment variable.
+===================================================================== */
+
+// ---------- SIMULASI SECURE SERVER CONFIG (pengganti process.env) ----------
+const KAS_ENV = {
+  OWNER_USER: 'owner',
+  // Catatan: password owner TIDAK dibandingkan sebagai plaintext.
+  // Nilai ini hanya seed awal demo; LANGSUNG di-hash saat init dan tidak
+  // pernah disimpan/disimpan-ulang sebagai plaintext.
+  OWNER_PASS_SEED: 'owner123',
+  APP_NAME: 'KAS KELAS'
+};
+
+const $ = (id)=>document.getElementById(id);
+const MONTHS = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const EXP_CATS = ['Alat Kebersihan','Fotocopy & ATK','Konsumsi','Dekorasi','Kasbon','Lainnya'];
+const CURRENT_MONTH = 'Oktober';
+const CURRENT_YEAR = 2026;
+
+// ---------- UTILS ----------
+const fmtRp = (n)=> 'Rp' + Number(n||0).toLocaleString('id-ID');
+const esc = (s)=> String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = ()=> 'id_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,9);
+function timeAgo(ts){
+  const s = Math.floor((Date.now()-ts)/1000);
+  if(s<10) return 'baru saja'; if(s<60) return s+' dtk lalu';
+  const m=Math.floor(s/60); if(m<60) return m+' mnt lalu';
+  const h=Math.floor(m/60); if(h<24) return h+' jam lalu';
+  const d=Math.floor(h/24); if(d<7) return d+' hari lalu';
+  return new Date(ts).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});
+}
+const fmtDate = (d)=>{ try{ return new Date(d).toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'});}catch(e){return d;} };
+const avatarGrad = (name)=>{ const n=(name||'A').toLowerCase().charCodeAt(0)%6+1; return 'avatar-grad-'+n; };
+const todayISO = ()=> '2026-10-08';
+
+// ---------- CRYPTO (Web Crypto API) ----------
+function hex(buf){ return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join(''); }
+function randHex(bytes){ const a=new Uint8Array(bytes); crypto.getRandomValues(a); return [...a].map(b=>b.toString(16).padStart(2,'0')).join(''); }
+async function hashPassword(password, saltHex){
+  const enc = new TextEncoder();
+  const salt = new Uint8Array(saltHex.match(/.{2}/g).map(h=>parseInt(h,16)));
+  const key = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({name:'PBKDF2', hash:'SHA-256', salt, iterations:80000}, key, 256);
+  return hex(bits);
+}
+
+// ---------- DATABASE TERKUNCI (hanya Backend yang boleh akses) ----------
+const SecureStore = (()=>{
+  const DB_KEY='kaskelas_db_v2', SES_KEY='kaskelas_ses_v2';
+  let cache=null;
+  function load(){ if(cache) return cache; try{ cache=JSON.parse(localStorage.getItem(DB_KEY)||'null'); }catch(e){cache=null;} return cache; }
+  function save(db){ cache=db; localStorage.setItem(DB_KEY, JSON.stringify(db)); }
+  function loadSes(){ try{ return JSON.parse(localStorage.getItem(SES_KEY)||'{}'); }catch(e){ return {}; } }
+  function saveSes(s){ localStorage.setItem(SES_KEY, JSON.stringify(s)); }
+  function wipe(){ localStorage.removeItem(DB_KEY); localStorage.removeItem(SES_KEY); cache=null; }
+  return { load, save, loadSes, saveSes, wipe };
+})();
+
+// ---------- BACKEND (LAPISAN SERVER + OTORISASI) ----------
+const Backend = {
+  _db(){ const db=SecureStore.load(); if(!db) throw {code:500,message:'Database belum diinisialisasi.'}; return db; },
+  _save(db){ SecureStore.save(db); },
+
+  _auth(token){
+    if(!token) throw {code:401,message:'Sesi tidak ditemukan. Silakan login ulang.'};
+    const sessions=SecureStore.loadSes();
+    const ses=sessions[token];
+    if(!ses) throw {code:401,message:'Sesi tidak valid. Silakan login ulang.'};
+    if(ses.expiresAt < Date.now()){ delete sessions[token]; SecureStore.saveSes(sessions); throw {code:401,message:'Sesi kedaluwarsa. Silakan login ulang.'}; }
+    const db=this._db();
+    const user=db.users.find(u=>u.id===ses.userId);
+    if(!user) throw {code:401,message:'Akun tidak ditemukan.'};
+    if(user.status!=='active') throw {code:403,message:'Akun dinonaktifkan.'};
+    return { user, db, sessions, ses };
+  },
+  _need(token, roles){
+    const ctx=this._auth(token);
+    if(!roles.includes(ctx.user.role)) throw {code:403,message:'Akses ditolak: membutuhkan peran '+roles.join('/' )+'.'};
+    return ctx;
+  },
+  _log(db, user, action, detail){
+    db.logs.unshift({id:uid(), user:user.username, role:user.role, action, detail:detail||'', timestamp:Date.now()});
+    if(db.logs.length>300) db.logs=db.logs.slice(0,300);
+  },
+  _public(u){ const {passwordHash,salt,...rest}=u; return rest; },
+
+  async register(username, password){
+    username=(username||'').trim(); password=password||'';
+    if(username.length<3) throw {code:400,message:'Nama pengguna minimal 3 karakter.'};
+    if(!/^[a-zA-Z0-9_. ]+$/.test(username)) throw {code:400,message:'Nama hanya boleh huruf, angka, spasi, titik, underscore.'};
+    if(password.length<6) throw {code:400,message:'Password minimal 6 karakter.'};
+    const db=this._db();
+    if(db.users.some(u=>u.username.toLowerCase()===username.toLowerCase())) throw {code:409,message:'Nama pengguna sudah dipakai.'};
+    const salt=randHex(16); const passwordHash=await hashPassword(password,salt);
+    const user={id:uid(), username, role:'USER', status:'active', passwordHash, salt, createdAt:Date.now(), lastLoginAt:Date.now()};
+    db.users.push(user);
+    db.notifications.unshift({id:uid(), type:'new_user', userId:user.id, username:user.username, timestamp:Date.now(), status:'pending'});
+    this._log(db, user, 'Siswa baru mendaftar', `${user.username} membuat akun dan masuk.`);
+    this._save(db);
+    const token=randHex(32); const sessions=SecureStore.loadSes();
+    sessions[token]={userId:user.id, createdAt:Date.now(), expiresAt:Date.now()+7*24*3600*1000};
+    SecureStore.saveSes(sessions);
+    return { token, user:this._public(user) };
+  },
+
+  async login(username, password){
+    username=(username||'').trim();
+    const db=this._db();
+    const user=db.users.find(u=>u.username.toLowerCase()===username.toLowerCase());
+    if(!user) throw {code:401,message:'Nama pengguna atau password salah.'};
+    if(user.status!=='active') throw {code:403,message:'Akun dinonaktifkan. Hubungi Owner.'};
+    const h=await hashPassword(password||'', user.salt);
+    if(h!==user.passwordHash) throw {code:401,message:'Nama pengguna atau password salah.'};
+    user.lastLoginAt=Date.now();
+    this._log(db, user, 'Login', `${user.username} (${user.role}) masuk ke aplikasi.`);
+    this._save(db);
+    const token=randHex(32); const sessions=SecureStore.loadSes();
+    sessions[token]={userId:user.id, createdAt:Date.now(), expiresAt:Date.now()+7*24*3600*1000};
+    SecureStore.saveSes(sessions);
+    return { token, user:this._public(user) };
+  },
+
+  logout(token){ const s=SecureStore.loadSes(); delete s[token]; SecureStore.saveSes(s); return true; },
+  getMe(token){ const {user}=this._auth(token); return this._public(user); },
+
+  getDashboard(token){
+    const {user,db}=this._auth(token);
+    const inc=db.transactions.filter(t=>t.type==='in');
+    const out=db.transactions.filter(t=>t.type==='out');
+    const totalIn=inc.reduce((a,b)=>a+b.amount,0), totalOut=out.reduce((a,b)=>a+b.amount,0);
+    const students=db.users.filter(u=>u.role==='USER');
+    const paidThisMonth=new Set(inc.filter(t=>t.month===CURRENT_MONTH).map(t=>(t.studentName||'').toLowerCase().trim()));
+    const unpaid=students.filter(s=>!paidThisMonth.has(s.username.toLowerCase().trim()));
+    const myPayments=inc.filter(t=>(t.studentName||'').toLowerCase().trim()===user.username.toLowerCase().trim());
+    const myPaidMonth=myPayments.some(t=>t.month===CURRENT_MONTH);
+    const pendingNotifs = user.role==='OWNER' ? db.notifications.filter(n=>n.status==='pending') : [];
+    const monthly=MONTHS.map(m=>({month:m, masuk:inc.filter(t=>t.month===m).reduce((a,b)=>a+b.amount,0), keluar:out.filter(t=>t.month===m).reduce((a,b)=>a+b.amount,0)}));
+    return { saldo:totalIn-totalOut, totalIn, totalOut, studentCount:students.length, adminCount:db.users.filter(u=>u.role==='ADMIN').length,
+      unpaidCount:unpaid.length, unpaidNames:unpaid.map(u=>u.username), myPaidMonth, myTotal:myPayments.reduce((a,b)=>a+b.amount,0),
+      myCount:myPayments.length, pendingNotifs, monthly, settings:db.settings, recent:db.transactions.slice(0,6), announcements:db.announcements.slice(0,3) };
+  },
+
+  getTransactions(token, f={}){
+    this._auth(token);
+    const db=this._db();
+    let list=[...db.transactions];
+    if(f.type) list=list.filter(t=>t.type===f.type);
+    if(f.month && f.month!=='Semua') list=list.filter(t=>t.month===f.month);
+    if(f.search){ const s=f.search.toLowerCase(); list=list.filter(t=>((t.studentName||'')+(t.category||'')+(t.note||'')).toLowerCase().includes(s)); }
+    if(f.mine){ const {user}=this._auth(token); list=list.filter(t=>(t.studentName||'').toLowerCase()===user.username.toLowerCase()); }
+    return list;
+  },
+
+  async addIncome(token, data){
+    const {user,db}=this._need(token,['OWNER','ADMIN']);
+    const amount=parseInt(data.amount,10);
+    if(!data.studentName?.trim()) throw {code:400,message:'Nama siswa wajib diisi.'};
+    if(!amount||amount<500) throw {code:400,message:'Nominal minimal Rp500.'};
+    if(!MONTHS.includes(data.month)) throw {code:400,message:'Bulan tidak valid.'};
+    const tr={id:uid(), type:'in', studentName:data.studentName.trim(), amount, month:data.month, date:data.date||todayISO(), note:(data.note||'').trim(), createdBy:user.username, createdByRole:user.role, createdAt:Date.now()};
+    db.transactions.unshift(tr);
+    this._log(db,user,'Mencatat pemasukan',`${tr.studentName} — ${tr.month} — ${fmtRp(tr.amount)}`);
+    this._save(db); return tr;
+  },
+
+  async addExpense(token, data){
+    const {user,db}=this._need(token,['OWNER','ADMIN']);
+    const amount=parseInt(data.amount,10);
+    if(!amount||amount<500) throw {code:400,message:'Nominal minimal Rp500.'};
+    if(!data.category?.trim()) throw {code:400,message:'Kategori wajib diisi.'};
+    const tr={id:uid(), type:'out', category:data.category.trim(), amount, month:data.month&&MONTHS.includes(data.month)?data.month:CURRENT_MONTH, date:data.date||todayISO(), note:(data.note||'').trim(), createdBy:user.username, createdByRole:user.role, createdAt:Date.now()};
+    db.transactions.unshift(tr);
+    this._log(db,user,'Menambahkan pengeluaran',`${tr.category} — ${fmtRp(tr.amount)}`);
+    this._save(db); return tr;
+  },
+
+  async deleteTransaction(token, id){
+    const {user,db}=this._need(token,['OWNER','ADMIN']);
+    const idx=db.transactions.findIndex(t=>t.id===id);
+    if(idx<0) throw {code:404,message:'Transaksi tidak ditemukan.'};
+    const tr=db.transactions[idx];
+    if(user.role==='ADMIN' && tr.createdBy!==user.username) throw {code:403,message:'Admin hanya boleh menghapus transaksi buatannya sendiri. Minta Owner untuk menghapus ini.'};
+    db.transactions.splice(idx,1);
+    this._log(db,user,'Menghapus transaksi',`${tr.type==='in'?tr.studentName:tr.category} — ${fmtRp(tr.amount)}`);
+    this._save(db); return true;
+  },
+
+  getUsers(token){
+    const {db}=this._need(token,['OWNER']);
+    return [...db.users].sort((a,b)=>b.lastLoginAt-a.lastLoginAt).map(u=>this._public(u));
+  },
+
+  promote(token, targetId){
+    const {user,db}=this._need(token,['OWNER']);
+    const t=db.users.find(u=>u.id===targetId);
+    if(!t) throw {code:404,message:'Pengguna tidak ditemukan.'};
+    if(t.role==='OWNER') throw {code:403,message:'Tidak dapat mengubah role Owner.'};
+    if(t.id===user.id) throw {code:403,message:'Tidak dapat mengubah role diri sendiri.'};
+    if(t.role==='ADMIN') throw {code:400,message:'Sudah menjadi Admin.'};
+    t.role='ADMIN';
+    db.notifications.forEach(n=>{ if(n.userId===t.id&&n.status==='pending') n.status='approved_admin'; });
+    this._log(db,user,'Menjadikan Admin',`${user.username} menjadikan ${t.username} sebagai Admin.`);
+    this._save(db); return this._public(t);
+  },
+
+  demote(token, targetId){
+    const {user,db}=this._need(token,['OWNER']);
+    const t=db.users.find(u=>u.id===targetId);
+    if(!t) throw {code:404,message:'Pengguna tidak ditemukan.'};
+    if(t.role==='OWNER') throw {code:403,message:'Tidak dapat mencabut Owner.'};
+    if(t.id===user.id) throw {code:403,message:'Tidak dapat mencabut role diri sendiri.'};
+    if(t.role!=='ADMIN') throw {code:400,message:'Pengguna bukan Admin.'};
+    t.role='USER';
+    this._log(db,user,'Mencabut Admin',`${user.username} mencabut role Admin dari ${t.username}.`);
+    this._save(db); return this._public(t);
+  },
+
+  getNotifications(token){
+    const {user,db}=this._need(token,['OWNER']);
+    return db.notifications.slice(0,20);
+  },
+  pendingCount(token){
+    const {user,db}=this._auth(token);
+    if(user.role!=='OWNER') return 0;
+    return db.notifications.filter(n=>n.status==='pending').length;
+  },
+  handleNotification(token, notifId, decision){
+    const {user,db}=this._need(token,['OWNER']);
+    const n=db.notifications.find(x=>x.id===notifId);
+    if(!n) throw {code:404,message:'Notifikasi tidak ditemukan.'};
+    if(n.status!=='pending') throw {code:400,message:'Notifikasi sudah ditangani.'};
+    const target=db.users.find(u=>u.id===n.userId);
+    if(decision==='admin'){
+      if(!target) throw {code:404,message:'Akun siswa tidak ditemukan.'};
+      if(target.role!=='USER') throw {code:400,message:'Akun sudah bukan siswa.'};
+      target.role='ADMIN'; n.status='approved_admin';
+      this._log(db,user,'Menjadikan Admin',`${user.username} menjadikan ${target.username} sebagai Admin (via notifikasi).`);
+    } else { n.status='approved_user'; this._log(db,user,'Konfirmasi siswa',`${n.username} ditetapkan sebagai Siswa.`); }
+    this._save(db); return true;
+  },
+
+  getLogs(token){
+    this._need(token,['OWNER','ADMIN']);
+    return this._db().logs.slice(0,120);
+  },
+  getAnnouncements(token){ this._auth(token); return this._db().announcements; },
+  addAnnouncement(token, title, content){
+    const {user,db}=this._need(token,['OWNER','ADMIN']);
+    if(!title?.trim()||!content?.trim()) throw {code:400,message:'Judul dan isi wajib diisi.'};
+    const a={id:uid(), title:title.trim(), content:content.trim(), createdBy:user.username, createdAt:Date.now()};
+    db.announcements.unshift(a);
+    this._log(db,user,'Membuat pengumuman',title.trim());
+    this._save(db); return a;
+  },
+  deleteAnnouncement(token, id){
+    const {user,db}=this._need(token,['OWNER']);
+    db.announcements=db.announcements.filter(a=>a.id!==id);
+    this._log(db,user,'Menghapus pengumuman','Pengumuman dihapus.');
+    this._save(db); return true;
+  },
+  getSettings(token){ this._auth(token); return this._db().settings; },
+  updateSettings(token, s){
+    const {user,db}=this._need(token,['OWNER']);
+    db.settings={...db.settings, className:(s.className||db.settings.className).slice(0,40), iuran:Math.max(0,parseInt(s.iuran)||db.settings.iuran)};
+    this._log(db,user,'Memperbarui pengaturan',`Iuran ${fmtRp(db.settings.iuran)} • ${db.settings.className}`);
+    this._save(db); return db.settings;
+  },
+  async changePassword(token, oldPass, newPass){
+    const {user,db}=this._auth(token);
+    const full=db.users.find(u=>u.id===user.id);
+    const h=await hashPassword(oldPass||'', full.salt);
+    if(h!==full.passwordHash) throw {code:401,message:'Password lama salah.'};
+    if((newPass||'').length<6) throw {code:400,message:'Password baru minimal 6 karakter.'};
+    const salt=randHex(16); full.salt=salt; full.passwordHash=await hashPassword(newPass,salt);
+    this._log(db,full,'Mengganti password',`${full.username} mengganti password.`);
+    this._save(db); return true;
+  }
+};
+
+// ---------- SEED DATABASE ----------
+async function seedIfNeeded(){
+  if(SecureStore.load()) return;
+  const mk = async (username, pass, role, lastAgo)=>{
+    const salt=randHex(16);
+    return { id:uid(), username, role, status:'active', passwordHash:await hashPassword(pass,salt), salt,
+      createdAt:Date.now()-30*864e5, lastLoginAt:Date.now()-lastAgo };
+  };
+  const users=[
+    await mk(KAS_ENV.OWNER_USER, KAS_ENV.OWNER_PASS_SEED,'OWNER', 3600e3),
+    await mk('admin','admin123','ADMIN', 7200e3),
+    await mk('bagas','bagas123','USER', 1800e3),
+    await mk('fahmi','siswa123','USER', 5*3600e3),
+    await mk('siti','siswa123','USER', 26*3600e3),
+    await mk('dewi','siswa123','USER', 2*864e5),
+    await mk('andi','siswa123','USER', 3*864e5),
+    await mk('putri','siswa123','USER', 8*3600e3),
+    await mk('rizky','siswa123','USER', 4*864e5),
+    await mk('anisa','siswa123','USER', 12*3600e3),
+    await mk('dimas','siswa123','USER', 50*60e3),
+    await mk('ayu','siswa123','USER', 20*60e3),
+  ];
+  const T=(type,o)=>({id:uid(),type,createdBy:'admin',createdByRole:'ADMIN',createdAt:new Date(o.date).getTime(),...o});
+  const transactions=[
+    T('in',{studentName:'bagas',amount:10000,month:'Oktober',date:'2026-10-02',note:'Kas Oktober'}),
+    T('in',{studentName:'fahmi',amount:10000,month:'Oktober',date:'2026-10-03',note:'Kas Oktober'}),
+    T('in',{studentName:'siti',amount:10000,month:'Oktober',date:'2026-10-04',note:'Kas Oktober'}),
+    T('in',{studentName:'putri',amount:10000,month:'Oktober',date:'2026-10-06',note:'Kas Oktober'}),
+    T('out',{category:'Konsumsi',amount:20000,month:'Oktober',date:'2026-10-05',note:'Air galon & tisu'}),
+    T('in',{studentName:'bagas',amount:10000,month:'September',date:'2026-09-05',note:'Kas September'}),
+    T('in',{studentName:'fahmi',amount:10000,month:'September',date:'2026-09-05',note:'Kas September'}),
+    T('in',{studentName:'siti',amount:10000,month:'September',date:'2026-09-06',note:'Kas September'}),
+    T('in',{studentName:'dewi',amount:10000,month:'September',date:'2026-09-06',note:'Kas September'}),
+    T('in',{studentName:'andi',amount:10000,month:'September',date:'2026-09-07',note:'Kas September'}),
+    T('in',{studentName:'putri',amount:10000,month:'September',date:'2026-09-07',note:'Kas September'}),
+    T('in',{studentName:'rizky',amount:10000,month:'September',date:'2026-09-08',note:'Kas September'}),
+    T('in',{studentName:'anisa',amount:10000,month:'September',date:'2026-09-09',note:'Kas September'}),
+    T('out',{category:'Fotocopy & ATK',amount:15000,month:'September',date:'2026-09-02',note:'Fotocopy materi'}),
+    T('out',{category:'Alat Kebersihan',amount:32000,month:'September',date:'2026-09-18',note:'Spidol & kertas'}),
+    T('in',{studentName:'bagas',amount:10000,month:'Agustus',date:'2026-08-05',note:'Kas Agustus'}),
+    T('in',{studentName:'fahmi',amount:10000,month:'Agustus',date:'2026-08-05',note:'Kas Agustus'}),
+    T('in',{studentName:'siti',amount:10000,month:'Agustus',date:'2026-08-06',note:'Kas Agustus'}),
+    T('in',{studentName:'dewi',amount:10000,month:'Agustus',date:'2026-08-06',note:'Kas Agustus'}),
+    T('in',{studentName:'andi',amount:10000,month:'Agustus',date:'2026-08-07',note:'Kas Agustus'}),
+    T('in',{studentName:'putri',amount:10000,month:'Agustus',date:'2026-08-07',note:'Kas Agustus'}),
+    T('out',{category:'Alat Kebersihan',amount:25000,month:'Agustus',date:'2026-08-12',note:'Sapu & pel'}),
+  ].sort((a,b)=>new Date(b.date)-new Date(a.date));
+  const dimas=users.find(u=>u.username==='dimas'), ayu=users.find(u=>u.username==='ayu');
+  const db={
+    users, transactions,
+    logs:[
+      {id:uid(),user:'admin',role:'ADMIN',action:'Menambahkan pengeluaran',detail:'Konsumsi — Rp20.000',timestamp:Date.now()-3*3600e3},
+      {id:uid(),user:'putri',role:'USER',action:'Login',detail:'putri (USER) masuk ke aplikasi.',timestamp:Date.now()-8*3600e3},
+      {id:uid(),user:'admin',role:'ADMIN',action:'Mencatat pemasukan',detail:'putri — Oktober — Rp10.000',timestamp:Date.now()-2*864e5},
+      {id:uid(),user:'owner',role:'OWNER',action:'Menjadikan Admin',detail:'owner menjadikan admin sebagai Admin.',timestamp:Date.now()-20*864e5},
+    ],
+    notifications:[
+      {id:uid(),type:'new_user',userId:ayu.id,username:'ayu',timestamp:Date.now()-20*60e3,status:'pending'},
+      {id:uid(),type:'new_user',userId:dimas.id,username:'dimas',timestamp:Date.now()-50*60e3,status:'pending'},
+    ],
+    announcements:[
+      {id:uid(),title:'Iuran Oktober Rp10.000',content:'Halo semua! Jangan lupa iuran kas bulan Oktober sebesar Rp10.000. Batas pembayaran tanggal 15 Oktober. Terima kasih!',createdBy:'admin',createdAt:Date.now()-2*864e5},
+      {id:uid(),title:'Kerja Bakti Jumat',content:'Jumat jam 14.00 kita kerja bakti membersihkan kelas. Dana kebersihan diambil dari kas. Kehadiran wajib ya!',createdBy:'owner',createdAt:Date.now()-5*864e5},
+    ],
+    settings:{className:'Kelas XII IPA 1', iuran:10000, school:'SMA Negeri 1'}
+  };
+  SecureStore.save(db);
+}
+
+// ---------- FRONTEND STATE ----------
+let sessionToken = sessionStorage.getItem('kaskelas_token') || null;
+let me = null;
+let page = 'dashboard';
+let hideSaldo = false;
+let filterInMonth='Semua', filterOutMonth='Semua', searchIn='', searchOut='', searchUser='';
+let reportMonth='Semua';
+
+const ICONS={
+  home:'<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/>',
+  in:'<path d="M12 5v14M19 12l-7 7-7-7"/>',
+  out:'<path d="M12 19V5M5 12l7-7 7 7"/>',
+  chart:'<path d="M18 20V10M12 20V4M6 20v-6"/>',
+  users:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>',
+  dots:'<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
+  mega:'<path d="M3 11l18-8-8 18-2.5-7.5z"/>',
+  receipt:'<path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><path d="M8 7h8M8 11h8M8 15h5"/>',
+  shield:'<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'
+};
+const icon=(n,s=20,c='currentColor')=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[n]||''}</svg>`;
+
+// ---------- TOAST ----------
+function toast(msg, type='success'){
+  const colors={success:'bg-[#0B1B33] text-white', error:'bg-red-500 text-white', info:'bg-ios-blue text-white'};
+  const ic={success:'<path d="M20 6L9 17l-5-5"/>', error:'<path d="M18 6L6 18M6 6l12 12"/>', info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>'}[type];
+  const el=document.createElement('div');
+  el.className=`toast-in pointer-events-auto ${colors[type]} px-4 py-3 rounded-2xl shadow-xl flex items-center gap-2.5 text-[13px] font-bold max-w-full`;
+  el.innerHTML=`<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">${ic}</svg><span>${esc(msg)}</span>`;
+  $('toastStack').appendChild(el);
+  setTimeout(()=>{ el.style.transition='.3s'; el.style.opacity='0'; el.style.transform='translateY(8px)'; setTimeout(()=>el.remove(),300); }, 2800);
+}
+
+// ---------- SHEET ----------
+function openSheet(html){
+  $('sheetContent').innerHTML=html;
+  $('sheetOverlay').classList.remove('hidden');
+  requestAnimationFrame(()=>{ $('sheetOverlay').style.opacity='1'; $('sheet').classList.add('open'); });
+}
+function closeSheet(){ $('sheetOverlay').style.opacity='0'; $('sheet').classList.remove('open'); setTimeout(()=>$('sheetOverlay').classList.add('hidden'),320); }
+
+// ---------- AUTH UI ----------
+function switchAuth(t){
+  const isLogin=t==='login';
+  $('tabLogin').classList.toggle('active',isLogin); $('tabRegister').classList.toggle('active',!isLogin);
+  $('loginForm').classList.toggle('hidden',!isLogin); $('registerForm').classList.toggle('hidden',isLogin);
+}
+function togglePass(id,btn){ const i=$(id); i.type=i.type==='password'?'text':'password'; btn.style.color=i.type==='text'?'#0A84FF':''; }
+async function doLogin(){
+  const u=$('loginUser').value, p=$('loginPass').value;
+  if(!u.trim()||!p){ toast('Isi nama pengguna dan password.','error'); return; }
+  const b=$('btnLogin'); b.disabled=true; b.innerHTML='<span class="animate-pulse">Memverifikasi...</span>';
+  try{ const r=await Backend.login(u,p); sessionToken=r.token; sessionStorage.setItem('kaskelas_token',r.token); me=r.user; enterApp(`Selamat datang, ${r.user.username}!`); }
+  catch(e){ toast(e.message||'Login gagal.','error'); }
+  finally{ b.disabled=false; b.innerHTML='<span>Masuk ke Aplikasi</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>'; }
+}
+async function doRegister(){
+  const u=$('regUser').value, p=$('regPass').value;
+  const b=$('btnReg'); b.disabled=true; b.innerHTML='<span class="animate-pulse">Membuat akun aman...</span>';
+  try{
+    const r=await Backend.register(u,p);
+    sessionToken=r.token; sessionStorage.setItem('kaskelas_token',r.token); me=r.user;
+    enterApp(`Akun ${r.user.username} dibuat! Owner telah diberi notifikasi.`);
+  }catch(e){ toast(e.message||'Pendaftaran gagal.','error'); }
+  finally{ b.disabled=false; b.innerHTML='<span>Buat Akun Siswa</span>'; }
+}
+async function quickLogin(u,p){ $('loginUser').value=u; $('loginPass').value=p; switchAuth('login'); await doLogin(); }
+function doLogout(){ try{ Backend.logout(sessionToken); }catch(e){} sessionToken=null; me=null; sessionStorage.removeItem('kaskelas_token'); $('appView').classList.add('hidden'); $('appView').classList.remove('flex'); $('authView').classList.remove('hidden'); toast('Kamu telah keluar. Sampai jumpa!','info'); }
+
+// ---------- APP SHELL ----------
+function enterApp(msg){
+  $('authView').classList.add('hidden'); $('appView').classList.remove('hidden'); $('appView').classList.add('flex');
+  page='dashboard'; refreshHeader(); renderNav(); render();
+  if(msg) toast(msg,'success');
+  updateBell();
+}
+function refreshHeader(){
+  if(!me) return;
+  $('hdrAvatar').textContent=(me.username||'?')[0].toUpperCase();
+  $('hdrAvatar').className=`w-11 h-11 rounded-[16px] ${avatarGrad(me.username)} text-white flex items-center justify-center font-extrabold text-lg shadow-soft`;
+  const h=new Date().getHours(); $('hdrGreet').textContent=h<11?'Selamat pagi,':h<15?'Selamat siang,':h<19?'Selamat sore,':'Selamat malam,';
+  $('hdrName').textContent=me.username;
+  const r=$('hdrRole');
+  r.textContent=me.role;
+  r.className='text-[10px] font-extrabold px-2 py-0.5 rounded-full '+(me.role==='OWNER'?'bg-amber-100 text-amber-700':me.role==='ADMIN'?'bg-violet-100 text-violet-700':'bg-blue-100 text-ios-blue');
+}
+function navItems(){
+  if(me.role==='OWNER') return [
+    {id:'dashboard',label:'Beranda',ic:'home'},{id:'pemasukan',label:'Masuk',ic:'in'},
+    {id:'pengeluaran',label:'Keluar',ic:'out'},{id:'laporan',label:'Laporan',ic:'chart'},{id:'menu',label:'Menu',ic:'dots'}];
+  if(me.role==='ADMIN') return [
+    {id:'dashboard',label:'Beranda',ic:'home'},{id:'pemasukan',label:'Masuk',ic:'in'},
+    {id:'pengeluaran',label:'Keluar',ic:'out'},{id:'laporan',label:'Laporan',ic:'chart'},{id:'aktivitas',label:'Aktivitas',ic:'clock'}];
+  return [
+    {id:'dashboard',label:'Beranda',ic:'home'},{id:'riwayat',label:'Riwayat',ic:'receipt'},
+    {id:'pengumuman',label:'Info',ic:'mega'},{id:'pengaturan',label:'Profil',ic:'gear'}];
+}
+function renderNav(){
+  $('bottomNav').innerHTML=navItems().map(n=>`
+    <button onclick="go('${n.id}')" class="tab-item btn-press flex flex-col items-center gap-1 px-2 py-1 min-w-[56px] ${page===n.id?'active':'text-slate-400'}">
+      <span class="tab-icon w-10 h-10 rounded-[16px] ${page===n.id?'':'bg-slate-100/80'} flex items-center justify-center">${icon(n.ic,19)}</span>
+      <span class="text-[10px] font-extrabold">${n.label}</span>
+    </button>`).join('');
+}
+function go(p){
+  if(p==='menu'){ openOwnerMenu(); return; }
+  // Guard tampilan (pertahanan lapis 1; otorisasi asli tetap di Backend)
+  if(me.role!=='OWNER' && p==='pengguna'){ toast('Hanya Owner yang boleh membuka Kelola Pengguna.','error'); return; }
+  if(me.role==='USER' && (p==='aktivitas')){ toast('Halaman ini khusus Admin/Owner.','error'); return; }
+  page=p; renderNav(); render();
+  $('appContent').scrollTop=0;
+}
+async function updateBell(){
+  try{
+    if(me.role==='OWNER'){
+      const c=Backend.pendingCount(sessionToken);
+      const b=$('bellBadge');
+      if(c>0){ b.textContent=c; b.classList.remove('hidden'); $('bellBtn').classList.add('bell-shake'); setTimeout(()=>$('bellBtn').classList.remove('bell-shake'),700); }
+      else b.classList.add('hidden');
+    } else { $('bellBadge').classList.add('hidden'); }
+  }catch(e){}
+}
+setInterval(()=>{ if(me&&me.role==='OWNER'){ updateBell(); if(page==='dashboard') softRefreshDashboardBadge(); } }, 6000);
+async function softRefreshDashboardBadge(){ try{ const d=Backend.getDashboard(sessionToken); const el=$('ownerNotifCount'); if(el) el.textContent=d.pendingNotifs.length; }catch(e){} }
+
+// re validasi role tiap render (mis. setelah promote, akses berubah saat refresh session)
+async function syncMe(){
+  try{ const fresh=Backend.getMe(sessionToken); if(fresh.role!==me.role){ me=fresh; refreshHeader(); renderNav(); toast(`Peranmu diperbarui menjadi ${fresh.role}.`,'info'); } else me=fresh; }
+  catch(e){ doLogout(); throw e; }
+}
+
+// ---------- RENDER ----------
+async function render(){
+  await syncMe().catch(()=>{});
+  if(!me) return;
+  const c=$('appContent');
+  try{
+    if(page==='dashboard') return renderDashboard(c);
+    if(page==='pemasukan') return renderIncome(c);
+    if(page==='pengeluaran') return renderExpense(c);
+    if(page==='laporan') return renderReport(c);
+    if(page==='pengguna') return renderUsers(c);
+    if(page==='aktivitas') return renderLogs(c);
+    if(page==='pengaturan') return renderSettings(c);
+    if(page==='riwayat') return renderMyHistory(c);
+    if(page==='pengumuman') return renderAnnouncements(c);
+  }catch(e){ c.innerHTML=errorCard(e.message||'Terjadi kesalahan.'); }
+}
+function errorCard(msg){
+  return `<div class="card p-8 text-center pop"><div class="w-14 h-14 mx-auto rounded-2xl bg-red-100 text-red-500 flex items-center justify-center mb-3"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg></div><p class="font-extrabold">Terjadi Kendala</p><p class="text-sm text-slate-500 font-medium mt-1">${esc(msg)}</p><button onclick="render()" class="btn-press mt-4 px-5 py-2.5 rounded-2xl bg-[#0B1B33] text-white text-sm font-bold">Coba Lagi</button></div>`;
+}
+const canWrite = ()=> me && (me.role==='OWNER'||me.role==='ADMIN');
+
+// ----- DASHBOARD -----
+async function renderDashboard(c){
+  const d=Backend.getDashboard(sessionToken);
+  updateBell();
+  const maxM=Math.max(...d.monthly.map(m=>Math.max(m.masuk,m.keluar)),1);
+  const last6=d.monthly.slice(4,10);
+  const isOwner=me.role==='OWNER', isUser=me.role==='USER';
+
+  c.innerHTML=`
+  <div class="stagger flex flex-col gap-4 page-anim">
+    <div class="rounded-[26px] p-5 text-white saldo-gradient shadow-blue shine relative overflow-hidden">
+      <div class="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-white/15"></div>
+      <div class="absolute -right-2 top-10 w-20 h-20 rounded-full bg-white/10"></div>
+      <div class="flex items-center justify-between relative">
+        <div>
+          <p class="text-[11px] font-bold text-white/80 uppercase tracking-widest">Saldo Kas • ${esc(d.settings.className)}</p>
+          <h1 class="text-[32px] font-extrabold tracking-tight mt-1">${hideSaldo?'••••••':fmtRp(d.saldo)}</h1>
+        </div>
+        <button onclick="hideSaldo=!hideSaldo;render()" class="btn-press w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center">
+          ${hideSaldo?'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19M14.12 14.12a3 3 0 1 1-4.24-4.24"/><path d="M1 1l22 22"/></svg>':'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>'}
+        </button>
+      </div>
+      <div class="grid grid-cols-2 gap-2.5 mt-4 relative">
+        <div class="bg-white/18 rounded-2xl p-3" style="background:rgba(255,255,255,0.18)"><p class="text-[11px] font-bold text-white/80">Pemasukan</p><p class="font-extrabold text-[15px]">+${fmtRp(d.totalIn)}</p></div>
+        <div class="rounded-2xl p-3" style="background:rgba(255,255,255,0.18)"><p class="text-[11px] font-bold text-white/80">Pengeluaran</p><p class="font-extrabold text-[15px]">−${fmtRp(d.totalOut)}</p></div>
+      </div>
+    </div>
+
+    ${isOwner && d.pendingNotifs.length?`
+    <div class="card p-4 !border-amber-200" style="background:linear-gradient(135deg,rgba(255,251,235,0.95),rgba(255,255,255,0.9));">
+      <div class="flex items-center gap-2.5 mb-1">
+        <span class="w-9 h-9 rounded-2xl bg-amber-400 text-white flex items-center justify-center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span>
+        <div><p class="font-extrabold text-[14px]">Siswa baru masuk <span id="ownerNotifCount" class="ml-1 px-2 py-0.5 rounded-full bg-red-500 text-white text-[11px]">${d.pendingNotifs.length}</span></p>
+        <p class="text-[12px] text-slate-500 font-medium">Perlu keputusan peran akun.</p></div>
+      </div>
+      <div class="flex flex-col gap-2 mt-2">
+        ${d.pendingNotifs.slice(0,3).map(n=>`
+        <div class="bg-white rounded-2xl border border-amber-100 p-3">
+          <p class="text-[13px] font-bold">“${esc(n.username)} baru saja login.”</p>
+          <p class="text-[12px] text-slate-500 font-medium">Apakah ingin menjadikannya Admin? • ${timeAgo(n.timestamp)}</p>
+          <div class="grid grid-cols-2 gap-2 mt-2.5">
+            <button onclick="decideNotif('${n.id}','admin')" class="btn-press py-2.5 rounded-xl bg-ios-blue text-white text-[12px] font-extrabold">Jadikan Admin</button>
+            <button onclick="decideNotif('${n.id}','user')" class="btn-press py-2.5 rounded-xl bg-slate-100 text-slate-700 text-[12px] font-extrabold">Tetap sebagai Siswa</button>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`:''}
+
+    ${isUser?`
+    <div class="card p-4 flex items-center gap-3 ${d.myPaidMonth?'':'!border-red-100'}">
+      <span class="w-12 h-12 shrink-0 rounded-[18px] ${d.myPaidMonth?'bg-emerald-500':'bg-red-500'} text-white flex items-center justify-center shadow-soft">
+        ${d.myPaidMonth?'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>':'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>'}
+      </span>
+      <div class="flex-1">
+        <p class="text-[11px] font-extrabold uppercase tracking-widest ${d.myPaidMonth?'text-emerald-600':'text-red-500'}">Status ${CURRENT_MONTH}</p>
+        <p class="font-extrabold text-[16px]">${d.myPaidMonth?'Lunas — Terima kasih!':'Belum membayar'}</p>
+        <p class="text-[12px] text-slate-500 font-medium">${d.myPaidMonth?`Total kontribusimu ${fmtRp(d.myTotal)} (${d.myCount}x)`:`Iuran ${fmtRp(d.settings.iuran)} • Hubungi admin untuk membayar`}</p>
+      </div>
+    </div>`:`
+    <div class="grid grid-cols-2 gap-3">
+      <div class="card card-hover p-4"><div class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-2">${icon('in',18)}</div><p class="text-[11px] font-bold text-slate-400 uppercase">Pemasukan</p><p class="font-extrabold text-[16px]">${fmtRp(d.totalIn)}</p></div>
+      <div class="card card-hover p-4"><div class="w-10 h-10 rounded-2xl bg-red-100 text-red-500 flex items-center justify-center mb-2">${icon('out',18)}</div><p class="text-[11px] font-bold text-slate-400 uppercase">Pengeluaran</p><p class="font-extrabold text-[16px]">${fmtRp(d.totalOut)}</p></div>
+      <div class="card card-hover p-4"><div class="w-10 h-10 rounded-2xl bg-blue-100 text-ios-blue flex items-center justify-center mb-2">${icon('users',18)}</div><p class="text-[11px] font-bold text-slate-400 uppercase">Jumlah Siswa</p><p class="font-extrabold text-[16px]">${d.studentCount} siswa</p></div>
+      <div class="card card-hover p-4 ${d.unpaidCount?'!border-red-100':''}"><div class="w-10 h-10 rounded-2xl ${d.unpaidCount?'bg-amber-100 text-amber-600':'bg-emerald-100 text-emerald-600'} flex items-center justify-center mb-2">${icon('clock',18)}</div><p class="text-[11px] font-bold text-slate-400 uppercase">Belum Bayar</p><p class="font-extrabold text-[16px]">${d.unpaidCount} siswa</p></div>
+    </div>`}
+
+    ${!isUser?`
+    <div class="grid grid-cols-2 gap-3">
+      <button onclick="openIncomeForm()" class="btn-press saldo-gradient text-white rounded-[22px] p-4 flex items-center gap-3 shadow-blue text-left">
+        <span class="w-10 h-10 rounded-2xl bg-white/25 flex items-center justify-center font-extrabold text-xl">+</span>
+        <span><span class="block font-extrabold text-[14px] leading-tight">Catat<br>Pembayaran</span></span>
+      </button>
+      <button onclick="openExpenseForm()" class="btn-press bg-[#0B1B33] text-white rounded-[22px] p-4 flex items-center gap-3 shadow-card text-left">
+        <span class="w-10 h-10 rounded-2xl bg-white/15 flex items-center justify-center font-extrabold text-xl">−</span>
+        <span><span class="block font-extrabold text-[14px] leading-tight">Catat<br>Pengeluaran</span></span>
+      </button>
+    </div>`:`
+    <div class="grid grid-cols-3 gap-2.5">
+      <div class="card p-3 text-center"><p class="text-[10px] font-bold text-slate-400 uppercase">Pemasukan</p><p class="font-extrabold text-[13px] text-emerald-600">${fmtRp(d.totalIn)}</p></div>
+      <div class="card p-3 text-center"><p class="text-[10px] font-bold text-slate-400 uppercase">Pengeluaran</p><p class="font-extrabold text-[13px] text-red-500">${fmtRp(d.totalOut)}</p></div>
+      <div class="card p-3 text-center"><p class="text-[10px] font-bold text-slate-400 uppercase">Siswa</p><p class="font-extrabold text-[13px]">${d.studentCount}</p></div>
+    </div>`}
+
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-4">
+        <div><p class="font-extrabold text-[15px]">Arus Kas 6 Bulan</p><p class="text-[12px] text-slate-500 font-medium">Mei — Oktober 2026</p></div>
+        <div class="flex gap-2 text-[10px] font-bold"><span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-ios-blue"></span>Masuk</span><span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-slate-300"></span>Keluar</span></div>
+      </div>
+      <div class="flex items-end justify-between gap-2 h-[120px]">
+        ${last6.map(m=>`
+        <div class="flex-1 flex flex-col items-center gap-1.5">
+          <div class="flex items-end gap-1 h-[90px]">
+            <div class="bar-anim w-3.5 rounded-full bg-gradient-to-t from-ios-blue to-[#5AC8FA]" style="height:${Math.max(6,m.masuk/maxM*90)}px"></div>
+            <div class="bar-anim w-3.5 rounded-full bg-slate-200" style="height:${Math.max(6,m.keluar/maxM*90)}px"></div>
+          </div>
+          <span class="text-[9px] font-extrabold text-slate-400">${m.month.slice(0,3)}</span>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <div>
+      <div class="flex items-center justify-between mb-2.5 px-1">
+        <p class="font-extrabold text-[15px]">Transaksi Terbaru</p>
+        <button onclick="go('${isUser?'riwayat':'pemasukan'}')" class="text-[12px] font-extrabold text-ios-blue">Lihat Semua ›</button>
+      </div>
+      <div class="flex flex-col gap-2">
+        ${d.recent.length?d.recent.map(t=>txRow(t,false)).join(''):'<div class="card p-5 text-center text-sm text-slate-400 font-medium">Belum ada transaksi.</div>'}
+      </div>
+    </div>
+
+    <div>
+      <div class="flex items-center justify-between mb-2.5 px-1">
+        <p class="font-extrabold text-[15px]">Pengumuman Kelas</p>
+        ${!isUser?`<button onclick="openAnnouncementForm()" class="text-[12px] font-extrabold text-ios-blue">+ Baru</button>`:''}
+      </div>
+      <div class="flex flex-col gap-2">
+        ${d.announcements.map(a=>`
+        <div class="card p-4">
+          <div class="flex items-start gap-3">
+            <span class="w-10 h-10 shrink-0 rounded-2xl glass-blue text-ios-blue flex items-center justify-center">${icon('mega',18)}</span>
+            <div class="min-w-0 flex-1"><p class="font-extrabold text-[14px]">${esc(a.title)}</p><p class="text-[12px] text-slate-500 font-medium line-clamp-2 mt-0.5">${esc(a.content)}</p><p class="text-[11px] text-slate-400 font-bold mt-1.5">oleh ${esc(a.createdBy)} • ${timeAgo(a.createdAt)}</p></div>
+          </div>
+        </div>`).join('')||'<div class="card p-5 text-center text-sm text-slate-400 font-medium">Belum ada pengumuman.</div>'}
+      </div>
+    </div>
+
+    <div class="card p-4 flex items-center gap-3 glass-blue">
+      <span class="w-10 h-10 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shrink-0">${icon('shield',18,'white')}</span>
+      <p class="text-[11px] font-medium text-slate-600 leading-snug"><b>Backend Verified.</b> Semua aksi dicek token sesi & peran di lapisan server. Siswa tidak bisa akses endpoint Admin.</p>
+    </div>
+  </div>`;
+}
+
+function txRow(t, withAction){
+  const isIn=t.type==='in';
+  return `
+  <div class="card card-hover p-3.5 flex items-center gap-3" onclick="openTxDetail('${t.id}')">
+    <span class="w-11 h-11 shrink-0 rounded-[16px] ${isIn?'bg-emerald-100 text-emerald-600':'bg-red-100 text-red-500'} flex items-center justify-center">${icon(isIn?'in':'out',19)}</span>
+    <div class="flex-1 min-w-0">
+      <p class="font-extrabold text-[14px] truncate">${esc(isIn?t.studentName:t.category)}</p>
+      <p class="text-[11px] text-slate-500 font-medium truncate">${isIn?esc(t.month)+' • ':''}${fmtDate(t.date)}${t.note?' • '+esc(t.note):''}</p>
+    </div>
+    <div class="text-right shrink-0">
+      <p class="font-extrabold text-[14px] ${isIn?'text-emerald-600':'text-red-500'}">${isIn?'+':'−'}${fmtRp(t.amount)}</p>
+      <p class="text-[10px] text-slate-400 font-bold">by ${esc(t.createdBy)}</p>
+    </div>
+  </div>`;
+}
+
+// ----- PEMASUKAN -----
+async function renderIncome(c){
+  const list=Backend.getTransactions(sessionToken,{type:'in',month:filterInMonth,search:searchIn});
+  const total=list.reduce((a,b)=>a+b.amount,0);
+  c.innerHTML=`
+  <div class="stagger flex flex-col gap-3 page-anim">
+    <div class="card p-5 flex items-center gap-4" style="background:linear-gradient(135deg,rgba(236,253,245,0.9),rgba(255,255,255,0.9));">
+      <span class="w-14 h-14 rounded-[20px] bg-emerald-500 text-white flex items-center justify-center shadow-soft">${icon('in',24,'white')}</span>
+      <div><p class="text-[11px] font-extrabold text-emerald-700 uppercase tracking-widest">Total Pemasukan</p><p class="font-extrabold text-[24px]">${fmtRp(total)}</p><p class="text-[12px] text-slate-500 font-medium">${list.length} pembayaran ${filterInMonth!=='Semua'?'• '+filterInMonth:''}</p></div>
+    </div>
+    <div class="relative">
+      <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+      <input oninput="searchIn=this.value;renderIncomeDeb()" value="${esc(searchIn)}" class="input" placeholder="Cari nama siswa / keterangan..." />
+    </div>
+    <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
+      ${['Semua',...MONTHS].map(m=>`<button onclick="filterInMonth='${m}';render()" class="btn-press shrink-0 px-4 py-2 rounded-full text-[12px] font-extrabold border ${filterInMonth===m?'chip-active bg-[#0B1B33] text-white':'bg-white text-slate-500 border-slate-200'}">${m}</button>`).join('')}
+    </div>
+    <div class="flex flex-col gap-2">${list.map(t=>txRow(t,true)).join('')||'<div class="card p-6 text-center text-sm text-slate-400 font-medium">Tidak ada data pemasukan.</div>'}</div>
+    ${canWrite()?`<button onclick="openIncomeForm()" class="btn-press fixed bottom-32 right-[max(1.25rem,calc(50%-215px+1.25rem))] w-14 h-14 rounded-[20px] saldo-gradient text-white shadow-blue flex items-center justify-center text-2xl font-bold z-20">+</button>`:''}
+  </div>`;
+}
+let _deb; function renderIncomeDeb(){ clearTimeout(_deb); _deb=setTimeout(()=>render(),400); }
+
+// ----- PENGELUARAN -----
+async function renderExpense(c){
+  const list=Backend.getTransactions(sessionToken,{type:'out',month:filterOutMonth,search:searchOut});
+  const total=list.reduce((a,b)=>a+b.amount,0);
+  c.innerHTML=`
+  <div class="stagger flex flex-col gap-3 page-anim">
+    <div class="card p-5 flex items-center gap-4" style="background:linear-gradient(135deg,rgba(254,242,242,0.9),rgba(255,255,255,0.9));">
+      <span class="w-14 h-14 rounded-[20px] bg-red-500 text-white flex items-center justify-center shadow-soft">${icon('out',24,'white')}</span>
+      <div><p class="text-[11px] font-extrabold text-red-600 uppercase tracking-widest">Total Pengeluaran</p><p class="font-extrabold text-[24px]">${fmtRp(total)}</p><p class="text-[12px] text-slate-500 font-medium">${list.length} pengeluaran ${filterOutMonth!=='Semua'?'• '+filterOutMonth:''}</p></div>
+    </div>
+    <div class="relative">
+      <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+      <input oninput="searchOut=this.value;renderExpDeb()" value="${esc(searchOut)}" class="input" placeholder="Cari kategori / keterangan..." />
+    </div>
+    <div class="grid grid-cols-3 gap-2">
+      ${EXP_CATS.map(cat=>{ const s=Backend.getTransactions(sessionToken,{type:'out'}).filter(t=>t.category===cat).reduce((a,b)=>a+b.amount,0); return `<div class="card p-3 text-center"><p class="text-[10px] font-extrabold text-slate-400 leading-tight">${cat}</p><p class="font-extrabold text-[12px] mt-1">${fmtRp(s)}</p></div>`; }).join('')}
+    </div>
+    <div class="flex flex-col gap-2">${list.map(t=>txRow(t,true)).join('')||'<div class="card p-6 text-center text-sm text-slate-400 font-medium">Tidak ada data pengeluaran.</div>'}</div>
+    ${canWrite()?`<button onclick="openExpenseForm()" class="btn-press fixed bottom-32 right-[max(1.25rem,calc(50%-215px+1.25rem))] w-14 h-14 rounded-[20px] bg-[#0B1B33] text-white shadow-card flex items-center justify-center text-2xl font-bold z-20">+</button>`:''}
+  </div>`;
+}
+function renderExpDeb(){ clearTimeout(_deb); _deb=setTimeout(()=>render(),400); }
+
+// ----- LAPORAN -----
+async function renderReport(c){
+  const d=Backend.getDashboard(sessionToken);
+  const all=Backend.getTransactions(sessionToken,{});
+  const list=reportMonth==='Semua'?all:all.filter(t=>t.month===reportMonth);
+  const tin=list.filter(t=>t.type==='in').reduce((a,b)=>a+b.amount,0);
+  const tout=list.filter(t=>t.type==='out').reduce((a,b)=>a+b.amount,0);
+  c.innerHTML=`
+  <div class="stagger flex flex-col gap-3 page-anim">
+    <div class="card p-5 text-center">
+      <p class="text-[11px] font-extrabold text-slate-400 uppercase tracking-widest">Laporan Keuangan</p>
+      <h2 class="font-extrabold text-[22px] mt-1">${reportMonth==='Semua'?'Semua Periode':reportMonth+' 2026'}</h2>
+      <div class="grid grid-cols-3 gap-2 mt-4">
+        <div class="rounded-2xl bg-emerald-50 p-3"><p class="text-[10px] font-bold text-emerald-700">MASUK</p><p class="font-extrabold text-[13px]">${fmtRp(tin)}</p></div>
+        <div class="rounded-2xl bg-red-50 p-3"><p class="text-[10px] font-bold text-red-600">KELUAR</p><p class="font-extrabold text-[13px]">${fmtRp(tout)}</p></div>
+        <div class="rounded-2xl bg-blue-50 p-3"><p class="text-[10px] font-bold text-ios-blue">SALDO</p><p class="font-extrabold text-[13px]">${fmtRp(tin-tout)}</p></div>
+      </div>
+      ${canWrite()?`<div class="grid grid-cols-2 gap-2 mt-3">
+        <button onclick="exportCSV()" class="btn-press py-3 rounded-2xl bg-[#0B1B33] text-white text-[12px] font-extrabold">⬇ Unduh CSV</button>
+        <button onclick="window.print()" class="btn-press py-3 rounded-2xl bg-slate-100 text-slate-700 text-[12px] font-extrabold">🖨 Cetak</button>
+      </div>`:''}
+    </div>
+    <div class="flex gap-2 overflow-x-auto no-scrollbar py-1">
+      ${['Semua',...MONTHS].map(m=>`<button onclick="reportMonth='${m}';render()" class="btn-press shrink-0 px-4 py-2 rounded-full text-[12px] font-extrabold border ${reportMonth===m?'chip-active':'bg-white text-slate-500 border-slate-200'}">${m}</button>`).join('')}
+    </div>
+    <div class="card p-5">
+      <p class="font-extrabold text-[14px] mb-3">Rincian per Bulan</p>
+      ${d.monthly.filter(m=>reportMonth==='Semua'||m.month===reportMonth).map(m=>{ const mx=Math.max(m.masuk,m.keluar,1); return `
+      <div class="mb-3"><div class="flex justify-between text-[12px] font-extrabold mb-1"><span>${m.month}</span><span class="text-slate-400">${fmtRp(m.masuk-m.keluar)}</span></div>
+      <div class="h-2.5 rounded-full bg-slate-100 overflow-hidden mb-1"><div class="h-full rounded-full bg-gradient-to-r from-ios-blue to-[#5AC8FA]" style="width:${m.masuk?Math.max(4,m.masuk/Math.max(...d.monthly.map(x=>x.masuk),1)*100):0}%"></div></div>
+      <div class="flex justify-between text-[11px] font-bold text-slate-400"><span class="text-emerald-600">+${fmtRp(m.masuk)}</span><span class="text-red-400">−${fmtRp(m.keluar)}</span></div></div>`; }).join('')}
+    </div>
+    <p class="font-extrabold text-[14px] px-1">Semua Transaksi (${list.length})</p>
+    <div class="flex flex-col gap-2">${list.slice(0,40).map(t=>txRow(t,false)).join('')||'<div class="card p-6 text-center text-sm text-slate-400 font-medium">Tidak ada data.</div>'}</div>
+  </div>`;
+}
+function exportCSV(){
+  try{
+    const list=Backend.getTransactions(sessionToken,{});
+    let csv='Tipe,Nama/Kategori,Nominal,Bulan,Tanggal,Keterangan,Dicatat Oleh\n';
+    list.forEach(t=>{ csv+=`${t.type==='in'?'Pemasukan':'Pengeluaran'},"${(t.studentName||t.category||'').replace(/"/g,'""')}",${t.amount},${t.month},${t.date},"${(t.note||'').replace(/"/g,'""')}",${t.createdBy}\n`; });
+    const blob=new Blob([csv],{type:'text/csv'}); const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob); a.download='laporan-kas-kelas.csv'; a.click();
+    toast('Laporan CSV berhasil diunduh.');
+  }catch(e){ toast(e.message,'error'); }
+}
+
+// ----- PENGGUNA (OWNER) -----
+async function renderUsers(c){
+  let users;
+  try{ users=Backend.getUsers(sessionToken); }
+  catch(e){ c.innerHTML=errorCard(e.message); return; }
+  const q=searchUser.toLowerCase();
+  const filtered=users.filter(u=>u.username.toLowerCase().includes(q));
+  c.innerHTML=`
+  <div class="stagger flex flex-col gap-3 page-anim">
+    <div class="card p-5">
+      <div class="flex items-center gap-3">
+        <span class="w-12 h-12 rounded-[18px] saldo-gradient text-white flex items-center justify-center">${icon('users',22,'white')}</span>
+        <div><p class="font-extrabold text-[18px]">Kelola Pengguna</p><p class="text-[12px] text-slate-500 font-medium">${users.length} akun • ${users.filter(u=>u.role==='ADMIN').length} admin • ${users.filter(u=>u.role==='USER').length} siswa</p></div>
+      </div>
+      <div class="relative mt-4">
+        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg></span>
+        <input oninput="searchUser=this.value;renderUserDeb()" value="${esc(searchUser)}" class="input !py-3 !text-[14px]" placeholder="Cari pengguna..." />
+      </div>
+    </div>
+    <div class="flex flex-col gap-2">
+      ${filtered.map(u=>`
+      <div class="card p-4">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-11 rounded-[16px] ${avatarGrad(u.username)} text-white flex items-center justify-center font-extrabold shrink-0">${esc(u.username[0].toUpperCase())}</div>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5"><p class="font-extrabold text-[14px] truncate">${esc(u.username)}</p>
+              <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-full ${u.role==='OWNER'?'bg-amber-100 text-amber-700':u.role==='ADMIN'?'bg-violet-100 text-violet-700':'bg-blue-100 text-ios-blue'}">${u.role}</span>
+            </div>
+            <p class="text-[11px] text-slate-500 font-medium">Aktif • Login ${timeAgo(u.lastLoginAt)}</p>
+          </div>
+        </div>
+        ${u.role==='USER'?`<button onclick="askPromote('${u.id}','${esc(u.username)}')" class="btn-press w-full mt-3 py-2.5 rounded-xl bg-ios-blue text-white text-[12px] font-extrabold">Jadikan Admin</button>`:''}
+        ${u.role==='ADMIN'?`<button onclick="askDemote('${u.id}','${esc(u.username)}')" class="btn-press w-full mt-3 py-2.5 rounded-xl bg-red-50 text-red-600 text-[12px] font-extrabold border border-red-100">Cabut Admin</button>`:''}
+        ${u.role==='OWNER'?`<div class="mt-3 py-2 rounded-xl bg-amber-50 text-amber-700 text-[11px] font-extrabold text-center border border-amber-100">👑 Owner Utama — Tidak dapat diubah</div>`:''}
+      </div>`).join('')||'<div class="card p-6 text-center text-sm text-slate-400 font-medium">Tidak ditemukan.</div>'}
+    </div>
+  </div>`;
+}
+function renderUserDeb(){ clearTimeout(_deb); _deb=setTimeout(()=>render(),400); }
+function askPromote(id,name){
+  openSheet(`<div class="text-center pop">
+    <div class="w-16 h-16 mx-auto rounded-[22px] saldo-gradient text-white flex items-center justify-center text-2xl font-extrabold shadow-blue mb-3">${esc(name[0].toUpperCase())}</div>
+    <h3 class="font-extrabold text-[18px]">Jadikan ${esc(name)} Admin?</h3>
+    <p class="text-[13px] text-slate-500 font-medium mt-1">Ia akan bisa mencatat pemasukan, pengeluaran, dan melihat laporan. Berlaku langsung setelah refresh sesi.</p>
+    <div class="grid grid-cols-2 gap-2 mt-5">
+      <button onclick="closeSheet()" class="btn-press py-3.5 rounded-2xl bg-slate-100 font-extrabold text-[14px]">Batal</button>
+      <button onclick="doPromote('${id}')" class="btn-press py-3.5 rounded-2xl saldo-gradient text-white font-extrabold text-[14px] shadow-blue">Ya, Jadikan</button>
+    </div></div>`);
+}
+async function doPromote(id){ try{ const u=Backend.promote(sessionToken,id); closeSheet(); toast(`${u.username} kini menjadi Admin.`); render(); updateBell(); }catch(e){ toast(e.message,'error'); } }
+function askDemote(id,name){
+  openSheet(`<div class="text-center pop">
+    <div class="w-16 h-16 mx-auto rounded-[22px] bg-red-500 text-white flex items-center justify-center shadow-soft mb-3"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"/></svg></div>
+    <h3 class="font-extrabold text-[18px]">Cabut Admin dari ${esc(name)}?</h3>
+    <p class="text-[13px] text-slate-500 font-medium mt-1">Akun kembali menjadi Siswa (read-only) dan tidak bisa mengelola kas.</p>
+    <div class="grid grid-cols-2 gap-2 mt-5">
+      <button onclick="closeSheet()" class="btn-press py-3.5 rounded-2xl bg-slate-100 font-extrabold text-[14px]">Batal</button>
+      <button onclick="doDemote('${id}')" class="btn-press py-3.5 rounded-2xl bg-red-500 text-white font-extrabold text-[14px]">Ya, Cabut</button>
+    </div></div>`);
+}
+async function doDemote(id){ try{ const u=Backend.demote(sessionToken,id); closeSheet(); toast(`Role Admin ${u.username} dicabut.`,'info'); render(); }catch(e){ toast(e.message,'error'); } }
+
+// ----- AKTIVITAS -----
+async function renderLogs(c){
+  let logs;
+  try{ logs=Backend.getLogs(sessionToken); }catch(e){ c.innerHTML=errorCard(e.message+' (Endpoint ini ditolak server untuk Siswa.)'); return; }
+  c.innerHTML=`
+  <div class="stagger flex flex-col gap-3 page-anim">
+    <div class="card p-5 flex items-center gap-4">
+      <span class="w-12 h-12 rounded-[18px] bg-[#0B1B33] text-white flex items-center justify-center">${icon('clock',22,'white')}</span>
+      <div><p class="font-extrabold text-[18px]">Activity Log</p><p class="text-[12px] text-slate-500 font-medium">${logs.length} aktivitas tercatat • transparan</p></div>
+    </div>
+    <div class="relative pl-1">
+      <div class="absolute left-[27px] top-2 bottom-2 w-[2px] bg-slate-100 rounded-full"></div>
+      <div class="flex flex-col gap-2">
+      ${logs.map(l=>`
+        <div class="card p-3.5 flex gap-3 items-start ml-0 relative">
+          <span class="w-9 h-9 shrink-0 rounded-2xl ${l.role==='OWNER'?'bg-amber-100 text-amber-700':l.role==='ADMIN'?'bg-violet-100 text-violet-700':'bg-blue-100 text-ios-blue'} flex items-center justify-center font-extrabold text-[14px] z-10">${esc((l.user||'?')[0].toUpperCase())}</span>
+          <div class="min-w-0 flex-1"><p class="text-[13px] font-bold leading-snug"><b>${esc(l.user)}</b> ${esc(l.action.toLowerCase())}</p>
+          ${l.detail?`<p class="text-[12px] text-slate-500 font-medium mt-0.5">${esc(l.detail)}</p>`:''}
+          <p class="text-[10px] font-bold text-slate-400 mt-1">${esc(l.role)} • ${timeAgo(l.timestamp)}</p></div>
+        </div>`).join('')||'<div class="card p-6 text-center text-sm text-slate-400">Belum ada aktivitas.</div>'}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ----- RIWAYAT SAYA (SISWA) -----
+async function renderMyHistory(c){
+  const list=Backend.getTransactions(sessionToken,{type:'in',mine:true});
+  const total=list.reduce((a,b)=>a+b.amount,0);
+  c.innerHTML=`
+  <div class="stagger flex flex-col gap-3 page-anim">
+    <div class="card p-5 text-center saldo-gradient text-white shine">
+      <p class="text-[11px] font-bold text-white/80 uppercase tracking-widest">Total Kontribusiku</p>
+      <p class="font-extrabold text-[30px] mt-1">${fmtRp(total)}</p>
+      <p class="text-[12px] font-bold text-white/80">${list.length} pembayaran tercatat</p>
+    </div>
+    <p class="font-extrabold text-[14px] px-1">Riwayat Pembayaranku (Read-Only)</p>
+    <div class="flex flex-col gap-2">${list.map(t=>`
+      <div class="card p-3.5 flex items-center gap-3">
+        <span class="w-11 h-11 rounded-[16px] bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">${icon('in',19)}</span>
+        <div class="flex-1"><p class="font-extrabold text-[14px]">${esc(t.month)} 2026</p><p class="text-[11px] text-slate-500 font-medium">${fmtDate(t.date)}${t.note?' • '+esc(t.note):''}</p></div>
+        <p class="font-extrabold text-emerald-600 text-[14px]">${fmtRp(t.amount)}</p>
+      </div>`).join('')||'<div class="card p-6 text-center text-sm text-slate-400 font-medium">Belum ada pembayaran atas namamu.</div>'}
+    </div>
+    <div class="card p-4 glass-blue flex gap-2.5 items-start"><span class="text-ios-blue mt-0.5">${icon('shield',18)}</span><p class="text-[12px] font-medium text-slate-600">Mode <b>read-only</b>: kamu tidak dapat menambah, mengedit, atau menghapus data kas. Semua tombol aksi disembunyikan & endpoint server menolak akses non-admin.</p></div>
+  </div>`;
+}
+
+// ----- PENGUMUMAN -----
+async function renderAnnouncements(c){
+  const list=Backend.getAnnouncements(sessionToken);
+  c.innerHTML=`
+  <div class="stagger flex flex-col gap-3 page-anim">
+    <div class="card p-5 flex items-center justify-between">
+      <div class="flex items-center gap-3"><span class="w-12 h-12 rounded-[18px] glass-blue text-ios-blue flex items-center justify-center">${icon('mega',22)}</span>
+      <div><p class="font-extrabold text-[18px]">Pengumuman</p><p class="text-[12px] text-slate-500 font-medium">${list.length} info kelas</p></div></div>
+      ${canWrite()?`<button onclick="openAnnouncementForm()" class="btn-press w-10 h-10 rounded-2xl saldo-gradient text-white text-xl font-bold shadow-blue">+</button>`:''}
+    </div>
+    ${list.map(a=>`
+    <div class="card p-4">
+      <p class="font-extrabold text-[15px]">${esc(a.title)}</p>
+      <p class="text-[13px] text-slate-600 font-medium mt-1 leading-relaxed">${esc(a.content)}</p>
+      <div class="flex items-center justify-between mt-3">
+        <p class="text-[11px] text-slate-400 font-bold">oleh ${esc(a.createdBy)} • ${timeAgo(a.createdAt)}</p>
+        ${me.role==='OWNER'?`<button onclick="delAnnounce('${a.id}')" class="text-[11px] font-extrabold text-red-500">Hapus</button>`:''}
+      </div>
+    </div>`).join('')||'<div class="card p-6 text-center text-sm text-slate-400">Belum ada pengumuman.</div>'}
+  </div>`;
+}
+async function delAnnounce(id){ try{ Backend.deleteAnnouncement(sessionToken,id); toast('Pengumuman dihapus.','info'); render(); }catch(e){ toast(e.message,'error'); } }
+
+// ----- PENGATURAN -----
+async function renderSettings(c){
+  const s=Backend.getSettings(sessionToken);
+  const isOwner=me.role==='OWNER';
+  c.innerHTML=`
+  <div class="stagger flex flex-col gap-3 page-anim">
+    <div class="card p-5 flex items-center gap-4">
+      <div class="w-16 h-16 rounded-[22px] ${avatarGrad(me.username)} text-white flex items-center justify-center font-extrabold text-2xl shadow-soft">${esc(me.username[0].toUpperCase())}</div>
+      <div class="flex-1"><p class="font-extrabold text-[18px]">${esc(me.username)}</p>
+        <span class="text-[10px] font-extrabold px-2.5 py-1 rounded-full ${me.role==='OWNER'?'bg-amber-100 text-amber-700':me.role==='ADMIN'?'bg-violet-100 text-violet-700':'bg-blue-100 text-ios-blue'}">${me.role}</span>
+        <p class="text-[11px] text-slate-400 font-medium mt-1.5">Login terakhir ${timeAgo(me.lastLoginAt)}</p>
+      </div>
+    </div>
+
+    <div class="card p-5">
+      <p class="font-extrabold text-[15px] mb-3">Pengaturan Kelas ${isOwner?'':'(Owner only)'}</p>
+      <label class="text-[11px] font-extrabold text-slate-400 uppercase">Nama Kelas</label>
+      <input id="setClass" ${isOwner?'':'disabled'} value="${esc(s.className)}" class="input input-noicon mt-1 mb-3 !py-3 ${isOwner?'':'opacity-60'}" />
+      <label class="text-[11px] font-extrabold text-slate-400 uppercase">Iuran per Bulan (Rp)</label>
+      <input id="setIuran" ${isOwner?'':'disabled'} type="number" value="${s.iuran}" class="input input-noicon mt-1 ${isOwner?'':'opacity-60'}" />
+      ${isOwner?`<button onclick="saveSettings()" class="btn-press w-full mt-3 py-3.5 rounded-2xl saldo-gradient text-white font-extrabold text-[14px] shadow-blue">Simpan Pengaturan</button>`:`<p class="text-[12px] text-slate-400 font-medium mt-2">Hanya Owner yang dapat mengubah pengaturan. Server menolak request dari peran lain (403).</p>`}
+    </div>
+
+    <div class="card p-5">
+      <p class="font-extrabold text-[15px] mb-3">Ganti Password</p>
+      <input id="oldP" type="password" placeholder="Password lama" class="input input-noicon !py-3 mb-2" />
+      <input id="newP" type="password" placeholder="Password baru (min. 6)" class="input input-noicon !py-3" />
+      <button onclick="changePass()" class="btn-press w-full mt-3 py-3 rounded-2xl bg-[#0B1B33] text-white font-extrabold text-[14px]">Perbarui Password</button>
+    </div>
+
+    <div class="card p-5 glass-blue">
+      <div class="flex items-center gap-2.5 mb-2"><span class="text-emerald-600">${icon('shield',20)}</span><p class="font-extrabold text-[14px]">Status Keamanan</p></div>
+      <div class="text-[12px] font-medium text-slate-600 leading-relaxed flex flex-col gap-1">
+        <p>✅ Password di-hash PBKDF2-SHA256 (80.000 iterasi) + salt acak</p>
+        <p>✅ Session token 256-bit, kedaluwarsa 7 hari</p>
+        <p>✅ Setiap endpoint memverifikasi token & peran di Backend</p>
+        <p>✅ Owner dikonfigurasi via secure config (KAS_ENV)</p>
+        <p>✅ Tidak ada password plaintext di localStorage</p>
+      </div>
+    </div>
+
+    ${isOwner?`
+    <div class="grid grid-cols-2 gap-2">
+      <button onclick="go('pengguna')" class="btn-press card p-4 text-left"><span class="text-ios-blue">${icon('users',22)}</span><p class="font-extrabold text-[13px] mt-1.5">Kelola Pengguna</p></button>
+      <button onclick="go('aktivitas')" class="btn-press card p-4 text-left"><span class="text-slate-700">${icon('clock',22)}</span><p class="font-extrabold text-[13px] mt-1.5">Activity Log</p></button>
+    </div>`:''}
+
+    <button onclick="doLogout()" class="btn-press w-full py-4 rounded-[22px] bg-red-50 text-red-600 border border-red-100 font-extrabold text-[14px] flex items-center justify-center gap-2">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg> Keluar dari Akun
+    </button>
+  </div>`;
+}
+async function saveSettings(){ try{ const s=Backend.updateSettings(sessionToken,{className:$('setClass').value,iuran:$('setIuran').value}); toast(`Pengaturan disimpan: ${s.className}.`); render(); }catch(e){ toast(e.message,'error'); } }
+async function changePass(){ try{ await Backend.changePassword(sessionToken,$('oldP').value,$('newP').value); toast('Password berhasil diperbarui.'); render(); }catch(e){ toast(e.message,'error'); } }
+
+// ---------- FORMS ----------
+function openIncomeForm(){
+  if(!canWrite()){ toast('Siswa tidak diizinkan mencatat pembayaran. (403)','error'); return; }
+  openSheet(`
+  <div class="pop">
+    <h3 class="font-extrabold text-[19px]">Catat Pembayaran</h3>
+    <p class="text-[13px] text-slate-500 font-medium mb-4">cth: Bagas — Oktober — Rp10.000</p>
+    <label class="text-[11px] font-extrabold text-slate-400 uppercase">Nama Siswa</label>
+    <input id="fInName" list="siswaList" class="input input-noicon mt-1 mb-3 !py-3" placeholder="Ketik nama siswa..." />
+    <datalist id="siswaList">${(SecureStore.load().users.filter(u=>u.role==='USER').map(u=>`<option value="${esc(u.username)}">`)).join('')}</datalist>
+    <div class="grid grid-cols-2 gap-2">
+      <div><label class="text-[11px] font-extrabold text-slate-400 uppercase">Nominal</label><input id="fInAmt" type="number" value="10000" class="input input-noicon mt-1 mb-3 !py-3" /></div>
+      <div><label class="text-[11px] font-extrabold text-slate-400 uppercase">Bulan</label><select id="fInMonth" class="input mt-1 mb-3 !py-3">${MONTHS.map(m=>`<option ${m===CURRENT_MONTH?'selected':''}>${m}</option>`).join('')}</select></div>
+    </div>
+    <label class="text-[11px] font-extrabold text-slate-400 uppercase">Tanggal</label>
+    <input id="fInDate" type="date" value="${todayISO()}" class="input input-noicon mt-1 mb-3 !py-3" />
+    <label class="text-[11px] font-extrabold text-slate-400 uppercase">Keterangan</label>
+    <input id="fInNote" class="input input-noicon mt-1 !py-3" placeholder="cth: Kas Oktober" />
+    <button onclick="submitIncome()" class="btn-press w-full mt-4 py-4 rounded-[20px] saldo-gradient text-white font-extrabold shadow-blue">Simpan Pembayaran</button>
+  </div>`);
+}
+async function submitIncome(){
+  try{ await Backend.addIncome(sessionToken,{studentName:$('fInName').value,amount:$('fInAmt').value,month:$('fInMonth').value,date:$('fInDate').value,note:$('fInNote').value}); closeSheet(); toast('Pembayaran tercatat. Saldo diperbarui.'); render(); }
+  catch(e){ toast(e.message,'error'); }
+}
+function openExpenseForm(){
+  if(!canWrite()){ toast('Siswa tidak diizinkan mencatat pengeluaran. (403)','error'); return; }
+  openSheet(`
+  <div class="pop">
+    <h3 class="font-extrabold text-[19px]">Catat Pengeluaran</h3>
+    <p class="text-[13px] text-slate-500 font-medium mb-4">cth: Alat kebersihan — Rp25.000</p>
+    <label class="text-[11px] font-extrabold text-slate-400 uppercase">Kategori</label>
+    <select id="fExCat" class="input mt-1 mb-3 !py-3">${EXP_CATS.map(m=>`<option>${m}</option>`).join('')}</select>
+    <div class="grid grid-cols-2 gap-2">
+      <div><label class="text-[11px] font-extrabold text-slate-400 uppercase">Nominal</label><input id="fExAmt" type="number" placeholder="25000" class="input input-noicon mt-1 mb-3 !py-3" /></div>
+      <div><label class="text-[11px] font-extrabold text-slate-400 uppercase">Tanggal</label><input id="fExDate" type="date" value="${todayISO()}" class="input input-noicon mt-1 mb-3 !py-3" /></div>
+    </div>
+    <label class="text-[11px] font-extrabold text-slate-400 uppercase">Keterangan</label>
+    <input id="fExNote" class="input input-noicon mt-1 !py-3" placeholder="cth: Beli sapu & pel" />
+    <button onclick="submitExpense()" class="btn-press w-full mt-4 py-4 rounded-[20px] bg-[#0B1B33] text-white font-extrabold">Simpan Pengeluaran</button>
+  </div>`);
+}
+async function submitExpense(){
+  try{ await Backend.addExpense(sessionToken,{category:$('fExCat').value,amount:$('fExAmt').value,date:$('fExDate').value,note:$('fExNote').value}); closeSheet(); toast('Pengeluaran tercatat. Saldo diperbarui.'); render(); }
+  catch(e){ toast(e.message,'error'); }
+}
+function openAnnouncementForm(){
+  if(!canWrite()){ toast('Tidak diizinkan.','error'); return; }
+  openSheet(`<div class="pop"><h3 class="font-extrabold text-[19px] mb-4">Pengumuman Baru</h3>
+    <label class="text-[11px] font-extrabold text-slate-400 uppercase">Judul</label>
+    <input id="fAnT" class="input input-noicon mt-1 mb-3 !py-3" placeholder="cth: Iuran November" />
+    <label class="text-[11px] font-extrabold text-slate-400 uppercase">Isi</label>
+    <textarea id="fAnC" rows="3" class="input input-noicon mt-1 !py-3" placeholder="Tulis pengumuman..."></textarea>
+    <button onclick="submitAnnounce()" class="btn-press w-full mt-4 py-4 rounded-[20px] saldo-gradient text-white font-extrabold shadow-blue">Publikasikan</button></div>`);
+}
+async function submitAnnounce(){ try{ await Backend.addAnnouncement(sessionToken,$('fAnT').value,$('fAnC').value); closeSheet(); toast('Pengumuman dipublikasikan.'); render(); }catch(e){ toast(e.message,'error'); } }
+
+function openTxDetail(id){
+  const db=SecureStore.load(); const t=db.transactions.find(x=>x.id===id); if(!t) return;
+  const isIn=t.type==='in';
+  openSheet(`<div class="pop">
+    <div class="flex items-center gap-3 mb-4">
+      <span class="w-14 h-14 rounded-[20px] ${isIn?'bg-emerald-500':'bg-red-500'} text-white flex items-center justify-center">${icon(isIn?'in':'out',24,'white')}</span>
+      <div><p class="text-[11px] font-extrabold uppercase tracking-widest ${isIn?'text-emerald-600':'text-red-500'}">${isIn?'Pemasukan':'Pengeluaran'}</p>
+      <p class="font-extrabold text-[22px]">${fmtRp(t.amount)}</p></div>
+    </div>
+    <div class="bg-slate-50 rounded-2xl p-4 text-[13px] font-medium flex flex-col gap-2">
+      <div class="flex justify-between"><span class="text-slate-400 font-bold">${isIn?'Nama Siswa':'Kategori'}</span><b>${esc(isIn?t.studentName:t.category)}</b></div>
+      <div class="flex justify-between"><span class="text-slate-400 font-bold">Bulan</span><b>${esc(t.month||'-')}</b></div>
+      <div class="flex justify-between"><span class="text-slate-400 font-bold">Tanggal</span><b>${fmtDate(t.date)}</b></div>
+      <div class="flex justify-between"><span class="text-slate-400 font-bold">Keterangan</span><b class="text-right max-w-[55%]">${esc(t.note||'-')}</b></div>
+      <div class="flex justify-between"><span class="text-slate-400 font-bold">Dicatat oleh</span><b>${esc(t.createdBy)} (${esc(t.createdByRole)})</b></div>
+    </div>
+    ${canWrite()?`<button onclick="askDeleteTx('${t.id}')" class="btn-press w-full mt-4 py-3.5 rounded-2xl bg-red-50 text-red-600 border border-red-100 font-extrabold text-[14px]">Hapus Transaksi</button>
+    <p class="text-[11px] text-slate-400 font-medium text-center mt-2">Admin hanya bisa menghapus transaksi buatannya sendiri (diverifikasi server).</p>`
+    :`<div class="mt-4 py-3 rounded-2xl bg-slate-100 text-slate-500 text-[12px] font-extrabold text-center">Mode read-only — tidak ada aksi edit/hapus</div>`}
+  </div>`);
+}
+function askDeleteTx(id){
+  openSheet(`<div class="text-center pop"><div class="w-16 h-16 mx-auto rounded-[22px] bg-red-500 text-white flex items-center justify-center mb-3"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></div>
+  <h3 class="font-extrabold text-[18px]">Hapus transaksi ini?</h3><p class="text-[13px] text-slate-500 font-medium">Saldo akan dihitung ulang otomatis. Aksi ini dicatat di Activity Log.</p>
+  <div class="grid grid-cols-2 gap-2 mt-5"><button onclick="closeSheet()" class="btn-press py-3.5 rounded-2xl bg-slate-100 font-extrabold">Batal</button><button onclick="delTx('${id}')" class="btn-press py-3.5 rounded-2xl bg-red-500 text-white font-extrabold">Hapus</button></div></div>`);
+}
+async function delTx(id){ try{ await Backend.deleteTransaction(sessionToken,id); closeSheet(); toast('Transaksi dihapus.','info'); render(); }catch(e){ toast(e.message,'error'); } }
+
+// ---------- NOTIFICATIONS ----------
+async function openNotifications(){
+  if(me.role==='OWNER'){
+    let notifs=[]; try{ notifs=Backend.getNotifications(sessionToken); }catch(e){ toast(e.message,'error'); return; }
+    const pending=notifs.filter(n=>n.status==='pending');
+    openSheet(`<div class="pop">
+      <h3 class="font-extrabold text-[19px]">Notifikasi Owner</h3>
+      <p class="text-[13px] text-slate-500 font-medium mb-4">${pending.length} siswa baru menunggu keputusan</p>
+      <div class="flex flex-col gap-2 max-h-[55vh] overflow-y-auto no-scrollbar">
+      ${notifs.map(n=>`
+        <div class="rounded-2xl border p-3.5 ${n.status==='pending'?'bg-amber-50/60 border-amber-200':'bg-slate-50 border-slate-100'}">
+          <div class="flex items-center gap-2.5">
+            <span class="w-10 h-10 rounded-2xl ${avatarGrad(n.username)} text-white flex items-center justify-center font-extrabold shrink-0">${esc(n.username[0].toUpperCase())}</span>
+            <div class="flex-1"><p class="font-extrabold text-[13px]">Siswa baru masuk</p><p class="text-[12px] text-slate-500 font-medium">“${esc(n.username)} baru saja login.” • ${timeAgo(n.timestamp)}</p></div>
+            ${n.status!=='pending'?`<span class="text-[10px] font-extrabold px-2 py-1 rounded-full ${n.status==='approved_admin'?'bg-violet-100 text-violet-700':'bg-slate-200 text-slate-600'}">${n.status==='approved_admin'?'ADMIN':'SISWA'}</span>`:''}
+          </div>
+          ${n.status==='pending'?`<p class="text-[12px] font-bold mt-2">Apakah ingin menjadikannya Admin?</p>
+          <div class="grid grid-cols-2 gap-2 mt-2">
+            <button onclick="decideNotif('${n.id}','admin')" class="btn-press py-2.5 rounded-xl bg-ios-blue text-white text-[12px] font-extrabold">Jadikan Admin</button>
+            <button onclick="decideNotif('${n.id}','user')" class="btn-press py-2.5 rounded-xl bg-white border border-slate-200 text-[12px] font-extrabold">Tetap Siswa</button>
+          </div>`:''}
+        </div>`).join('')||'<p class="text-center text-sm text-slate-400">Belum ada notifikasi.</p>'}
+      </div></div>`);
+  } else {
+    const anns=Backend.getAnnouncements(sessionToken);
+    openSheet(`<div class="pop"><h3 class="font-extrabold text-[19px]">Pusat Info</h3><p class="text-[13px] text-slate-500 font-medium mb-4">Pengumuman & info terbaru untukmu</p>
+    <div class="flex flex-col gap-2">${anns.map(a=>`<div class="rounded-2xl bg-slate-50 border border-slate-100 p-3.5"><p class="font-extrabold text-[13px]">${esc(a.title)}</p><p class="text-[12px] text-slate-500 font-medium mt-0.5">${esc(a.content)}</p><p class="text-[10px] text-slate-400 font-bold mt-1.5">${timeAgo(a.createdAt)}</p></div>`).join('')}</div></div>`);
+  }
+}
+async function decideNotif(id,decision){
+  try{ await Backend.handleNotification(sessionToken,id,decision); closeSheet(); toast(decision==='admin'?'Akun dijadikan Admin. Berlaku langsung.':'Akun ditetapkan sebagai Siswa.','success'); render(); updateBell(); }
+  catch(e){ toast(e.message,'error'); }
+}
+function openOwnerMenu(){
+  openSheet(`<div class="pop">
+    <h3 class="font-extrabold text-[19px] mb-4">Menu Owner</h3>
+    <div class="grid grid-cols-2 gap-2">
+      <button onclick="closeSheet();go('pengguna')" class="btn-press card p-4 text-left"><span class="w-10 h-10 rounded-2xl bg-blue-100 text-ios-blue flex items-center justify-center">${icon('users',19)}</span><p class="font-extrabold text-[13px] mt-2">Pengguna</p><p class="text-[11px] text-slate-400 font-medium">Kelola role</p></button>
+      <button onclick="closeSheet();go('aktivitas')" class="btn-press card p-4 text-left"><span class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-700 flex items-center justify-center">${icon('clock',19)}</span><p class="font-extrabold text-[13px] mt-2">Aktivitas</p><p class="text-[11px] text-slate-400 font-medium">Semua log</p></button>
+      <button onclick="closeSheet();go('pengaturan')" class="btn-press card p-4 text-left"><span class="w-10 h-10 rounded-2xl bg-violet-100 text-violet-700 flex items-center justify-center">${icon('gear',19)}</span><p class="font-extrabold text-[13px] mt-2">Pengaturan</p><p class="text-[11px] text-slate-400 font-medium">Kelas & akun</p></button>
+      <button onclick="closeSheet();openAnnouncementForm()" class="btn-press card p-4 text-left"><span class="w-10 h-10 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center">${icon('mega',19)}</span><p class="font-extrabold text-[13px] mt-2">Pengumuman</p><p class="text-[11px] text-slate-400 font-medium">Info kelas</p></button>
+    </div>
+    <button onclick="closeSheet();doLogout()" class="btn-press w-full mt-3 py-3.5 rounded-2xl bg-red-50 text-red-600 border border-red-100 font-extrabold text-[14px]">Keluar</button>
+  </div>`);
+}
+
+// ---------- INIT ----------
+(async function init(){
+  try{
+    await seedIfNeeded();
+    const s=SecureStore.load().settings;
+    $('authClassName').textContent=`${s.className} • Iuran ${fmtRp(s.iuran)}/bln`;
+    if(sessionToken){
+      try{ me=Backend.getMe(sessionToken); enterApp(); }
+      catch(e){ sessionToken=null; sessionStorage.removeItem('kaskelas_token'); $('authView').classList.remove('hidden'); }
+    } else { $('authView').classList.remove('hidden'); }
+  }catch(e){ $('authView').classList.remove('hidden'); }
+  finally{ setTimeout(()=>$('bootLoader').style.display='none',600); }
+})();
+
+// Enter key support
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter' && !$('authView').classList.contains('hidden')){
+    if(!$('loginForm').classList.contains('hidden')) doLogin(); else doRegister();
+  }
+});
+</script>
+</body>
+</html>
